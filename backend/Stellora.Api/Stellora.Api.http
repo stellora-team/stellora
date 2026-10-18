@@ -3,3 +3,32 @@
 ### Перевірка доступності API: очікується 200 OK
 GET {{baseUrl}}/api/health
 Accept: application/json
+### новий користувач: очікується 201
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "max.test@example.com",
+  "displayName": "Max",
+  "password": "TestPassword-2026!"
+}
+
+### той самий email з іншим регістром і пробілами, очікується 409
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "  MAX.TEST@example.com  ",
+  "displayName": "Another Max",
+  "password": "AnotherPassword-2026!"
+}
+
+### некоректні дані, очікується 400
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "not-an-email",
+  "displayName": "M",
+  "password": "6767676767"
+}

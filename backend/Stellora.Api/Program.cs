@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Stellora.Api.Data;
+using Microsoft.AspNetCore.Identity;
+using Stellora.Api.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +32,7 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 var app = builder.Build();
 
 app.UseExceptionHandler();
