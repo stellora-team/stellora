@@ -1,0 +1,5 @@
+<Solution>
+  <Folder Name="/backend/">
+    <Project Path="backend/Stellora.Api/Stellora.Api.csproj" />
+  </Folder>
+</Solution>
