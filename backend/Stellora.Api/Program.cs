@@ -1,4 +1,15 @@
+using Microsoft.EntityFrameworkCore;
+using Stellora.Api.Data;
+
 var builder = WebApplication.CreateBuilder(args);
+
+var connectionString = builder.Configuration
+                           .GetConnectionString("DefaultConnection")
+                       ?? throw new InvalidOperationException(
+                           "Connection string 'DefaultConnection' is not configured!");
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(connectionString));
 
 builder.Services.AddControllers();
 builder.Services.AddProblemDetails();

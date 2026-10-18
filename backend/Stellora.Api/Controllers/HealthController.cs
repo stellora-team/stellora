@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Stellora.Api.Data;
 
 namespace Stellora.Api.Controllers;
 
@@ -10,6 +12,43 @@ public sealed class HealthController : ControllerBase
     [HttpGet]
     public IActionResult Get()
     {
-        return Ok(new { status = "ok", service = "stellora-backend" });
+        return Ok(new
+        {
+            status = "ok",
+            service = "stellora-backend"
+
+        });
+    }
+
+    [HttpGet("db")]
+    public async Task<IActionResult> CheckDatabase(
+        [FromServices] AppDbContext dbContext,
+        [FromServices] IWebHostEnvironment environment,
+        CancellationToken cancellationToken)
+    {
+        // діагностичний маршрут доступний лише під час розробки
+        if (!environment.IsDevelopment())
+        {
+            return NotFound();
+        }
+
+        var canConnect = await dbContext.Database
+            .CanConnectAsync(cancellationToken);
+
+        if (!canConnect)
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, new
+            {
+                status = "error",
+                database = "unavailable"
+            });
+        }
+
+        return Ok(new
+        {
+            status = "ok",
+            database = "connected"
+        });
     }
 }
+
