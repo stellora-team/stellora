@@ -85,3 +85,10 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlZWM4ZjE5O
 
 ### вихід без токена очікується 401
 POST {{baseUrl}}/api/auth/logout
+
+### cвій профіль очікується 200
+GET {{baseUrl}}/api/users/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlZWM4ZjE5OS1jZjQ5LTQzZjktYTdkNi00NDYyMzUzODMwMTIiLCJzaWQiOiIyNWUyOTljNC1iOTA0LTQ4NTItYTYzYy02OTA0ZDU0ODliNzMiLCJqdGkiOiI1OTA2Mzk1OC1mYzEzLTQyYmYtOGNiNS0wM2RlZWVjMjYxNmUiLCJuYmYiOjE3OTMyMDEwNjgsImV4cCI6MTc5MzIwNDY2OCwiaXNzIjoiU3RlbGxvcmEuQXBpIiwiYXVkIjoiU3RlbGxvcmEuQ2xpZW50cyJ9.tDQ0W_jOoUv7axJYQuFFBLXws--0GS7Y-ORtcyhsBBU
+
+### без токена очікується 401
+GET {{baseUrl}}/api/users/me
