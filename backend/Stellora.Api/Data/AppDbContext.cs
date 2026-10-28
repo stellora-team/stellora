@@ -13,6 +13,7 @@ public sealed class AppDbContext : DbContext
     public DbSet<User> Users => Set<User>();    // DbSet<User> дозволяє звертатися до користувачів через dbContext.Users; OnModelCreating визначає правила таблиці
     public DbSet<UserSession> UserSessions => Set<UserSession>();
     public DbSet<Category> Categories => Set<Category>();
+    public DbSet<Habit> Habits => Set<Habit>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -141,5 +142,36 @@ public sealed class AppDbContext : DbContext
                 Name = "Відпочинок",
                 SortOrder = 70
             });
+        
+        var habit = modelBuilder.Entity<Habit>();
+
+        habit.ToTable("habits");
+
+        habit.HasKey(x => x.Id);
+
+        habit.Property(x => x.Title)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        habit.Property(x => x.Description)
+            .HasMaxLength(1000);
+
+        habit.Property(x => x.CreatedAtUtc)
+            .IsRequired();
+
+        habit.Property(x => x.UpdatedAtUtc)
+            .IsRequired(false);
+
+        habit.HasOne<User>()
+            .WithMany()
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        habit.HasOne<Category>()
+            .WithMany()
+            .HasForeignKey(x => x.CategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        habit.HasIndex(x => new { x.UserId, x.CreatedAtUtc });
     }
 }
