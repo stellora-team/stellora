@@ -11,6 +11,7 @@ public sealed class AppDbContext : DbContext
     }
 
     public DbSet<User> Users => Set<User>();    // DbSet<User> дозволяє звертатися до користувачів через dbContext.Users; OnModelCreating визначає правила таблиці
+    public DbSet<UserSession> UserSessions => Set<UserSession>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -43,5 +44,22 @@ public sealed class AppDbContext : DbContext
 
         user.Property(x => x.CreatedAtUtc)
             .IsRequired();
+        
+        var session = modelBuilder.Entity<UserSession>();
+
+        session.ToTable("user_sessions");
+
+        session.HasKey(x => x.Id);
+
+        session.Property(x => x.CreatedAtUtc)
+            .IsRequired();
+
+        session.Property(x => x.ExpiresAtUtc)
+            .IsRequired();
+
+        session.HasOne<User>()
+            .WithMany()
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
