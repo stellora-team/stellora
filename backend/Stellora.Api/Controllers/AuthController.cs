@@ -5,6 +5,8 @@ using Npgsql;
 using Stellora.Api.Contracts.Auth;
 using Stellora.Api.Data;
 using AppUser = Stellora.Api.Models.User;
+using Stellora.Api.Authentication;
+using Stellora.Api.Models;
 
 namespace Stellora.Api.Controllers;
 
@@ -75,6 +77,74 @@ public sealed class AuthController : ControllerBase
             user.CreatedAtUtc);
 
         return StatusCode(StatusCodes.Status201Created, response);
+    }
+    
+    [HttpPost("login")]
+    public async Task<ActionResult<LoginResponse>> Login(
+        [FromBody] LoginRequest request,
+        [FromServices] TokenService tokenService,
+        CancellationToken cancellationToken)
+    {
+        Response.Headers["Cache-Control"] = "no-store";
+
+        var normalizedEmail = request.Email.ToUpperInvariant();
+
+        var user = await _dbContext.Users.SingleOrDefaultAsync(
+            candidate => candidate.NormalizedEmail == normalizedEmail,
+            cancellationToken);
+
+        if (user is null)
+        {
+            return InvalidCredentials();
+        }
+
+        var verificationResult = _passwordHasher.VerifyHashedPassword(
+            user,
+            user.PasswordHash,
+            request.Password);
+
+        if (verificationResult == PasswordVerificationResult.Failed)
+        {
+            return InvalidCredentials();
+        }
+
+        if (verificationResult == PasswordVerificationResult.SuccessRehashNeeded)
+        {
+            user.PasswordHash = _passwordHasher.HashPassword(
+                user,
+                request.Password);
+        }
+
+        // JWT зберігає час з точністю до секунд.
+        var now = DateTimeOffset
+            .FromUnixTimeSeconds(DateTimeOffset.UtcNow.ToUnixTimeSeconds())
+            .UtcDateTime;
+
+        var session = new UserSession
+        {
+            UserId = user.Id,
+            CreatedAtUtc = now,
+            ExpiresAtUtc = now.AddMinutes(tokenService.LifetimeMinutes)
+        };
+
+        var accessToken = tokenService.CreateAccessToken(session);
+
+        _dbContext.UserSessions.Add(session);
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return Ok(new LoginResponse(
+            accessToken,
+            "Bearer",
+            session.ExpiresAtUtc));
+    }
+
+    private ObjectResult InvalidCredentials()
+    {
+        return Problem(
+            statusCode: StatusCodes.Status401Unauthorized,
+            title: "Invalid credentials",
+            detail: "Email or password is incorrect.");
     }
 
     private ObjectResult EmailAlreadyRegistered()

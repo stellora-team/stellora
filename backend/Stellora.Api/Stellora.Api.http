@@ -39,3 +39,34 @@ GET {{baseUrl}}/api/health/auth
 ### з підробленим токеном також очікується 401
 GET {{baseUrl}}/api/health/auth
 Authorization: Bearer definitely-not-a-valid-token
+
+### успішний вхід: очікується 200
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "max.test@example.com",
+  "password": "TestPassword-2026!"
+}
+
+### неправильний пароль: очікується 401
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "max.test@example.com",
+  "password": "WrongPassword-2026!"
+}
+
+### невідомий email: очікується 401
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "missing-user@example.com",
+  "password": "TestPassword-2026!"
+}
+
+### з дійсним токеном очікується 200
+GET {{baseUrl}}/api/health/auth
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlZWM4ZjE5OS1jZjQ5LTQzZjktYTdkNi00NDYyMzUzODMwMTIiLCJzaWQiOiI0OTEzODQyMC1hODhjLTQ3OWQtOWE3Mi1lMzJjMDgxMzRhNDgiLCJqdGkiOiJjZDgwNjE0OS1jYWNjLTQ2YjUtYTNhNi04OWRjMGZjZjVjOTEiLCJuYmYiOjE3OTMxOTk3MDksImV4cCI6MTc5MzIwMzMwOSwiaXNzIjoiU3RlbGxvcmEuQXBpIiwiYXVkIjoiU3RlbGxvcmEuQ2xpZW50cyJ9.Y4pPBZWMuKGSmN41ePyF4qYA1xQGXXDe7-EUD4OuyKI
