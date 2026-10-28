@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Stellora.Api.Data;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Stellora.Api.Controllers;
 
@@ -49,6 +50,12 @@ public sealed class HealthController : ControllerBase
             status = "ok",
             database = "connected"
         });
+    }
+    [Authorize]
+    [HttpGet("auth")]
+    public IActionResult CheckAuthentication()
+    {
+        return Ok(new { status = "authenticated" });
     }
 }
 

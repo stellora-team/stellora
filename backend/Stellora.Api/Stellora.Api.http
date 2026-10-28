@@ -32,3 +32,10 @@ Content-Type: application/json
   "displayName": "M",
   "password": "6767676767"
 }
+
+### без токена очікується 401
+GET {{baseUrl}}/api/health/auth
+
+### з підробленим токеном також очікується 401
+GET {{baseUrl}}/api/health/auth
+Authorization: Bearer definitely-not-a-valid-token
