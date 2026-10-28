@@ -39,6 +39,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 builder.Services.AddStelloraAuthentication(builder.Configuration);
+builder.Services.AddSingleton<DummyPasswordVerifier>();
 
 builder.Services.AddRateLimiter(options =>
 {
@@ -86,6 +87,7 @@ builder.Services.AddRateLimiter(options =>
 });
 
 var app = builder.Build();
+_ = app.Services.GetRequiredService<DummyPasswordVerifier>();
 
 app.UseExceptionHandler();
 

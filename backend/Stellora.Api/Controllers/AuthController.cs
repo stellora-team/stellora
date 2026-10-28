@@ -87,6 +87,7 @@ public sealed class AuthController : ControllerBase
     public async Task<ActionResult<LoginResponse>> Login(
         [FromBody] LoginRequest request,
         [FromServices] TokenService tokenService,
+        [FromServices] DummyPasswordVerifier dummyPasswordVerifier,
         CancellationToken cancellationToken)
     {
         Response.Headers["Cache-Control"] = "no-store";
@@ -99,6 +100,7 @@ public sealed class AuthController : ControllerBase
 
         if (user is null)
         {
+            dummyPasswordVerifier.Verify(request.Password);
             return InvalidCredentials();
         }
 
@@ -189,4 +191,5 @@ public sealed class AuthController : ControllerBase
             title: "Email already registered",
             detail: "An account with this email already exists.");
     }
+    
 }
