@@ -4,4 +4,5 @@ public sealed record DashboardResponse(
     string DisplayName,
     string TimeZone,
     DateOnly Today,
-    DateTimeOffset LocalNow);
+    DateTimeOffset LocalNow,
+    DashboardHabitsResponse Habits);

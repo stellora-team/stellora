@@ -49,10 +49,43 @@ public sealed class DashboardController : ControllerBase
             DateTimeOffset.UtcNow,
             timeZone);
 
+        var today = DateOnly.FromDateTime(localNow.DateTime);
+
+        var habitsQuery = _dbContext.Habits
+            .AsNoTracking()
+            .Where(habit => habit.UserId == userId);
+
+        var totalCount = await habitsQuery
+            .CountAsync(cancellationToken);
+
+        var completedTodayCount = await habitsQuery
+            .CountAsync(
+                habit => _dbContext.HabitCompletions.Any(completion =>
+                    completion.HabitId == habit.Id &&
+                    completion.CompletedOn == today),
+                cancellationToken);
+
+        var items = await habitsQuery
+            .OrderByDescending(habit => habit.CreatedAtUtc)
+            .ThenByDescending(habit => habit.Id)
+            .Take(5)
+            .Select(habit => new DashboardHabitResponse(
+                habit.Id,
+                habit.Title,
+                habit.CategoryId,
+                _dbContext.HabitCompletions.Any(completion =>
+                    completion.HabitId == habit.Id &&
+                    completion.CompletedOn == today)))
+            .ToListAsync(cancellationToken);
+
         return Ok(new DashboardResponse(
             user.DisplayName,
             user.TimeZone,
-            DateOnly.FromDateTime(localNow.DateTime),
-            localNow));
+            today,
+            localNow,
+            new DashboardHabitsResponse(
+                totalCount,
+                completedTodayCount,
+                items)));
     }
 }
