@@ -17,7 +17,7 @@ type HabitFormProps = {
 const inputClass =
   'w-full bg-[#1b1736]/90 border border-[#443869] rounded-xl py-3 px-4 text-[#EAE5FF] placeholder:text-[#EAE5FF]/50 focus:outline-none focus:border-[#A749EE] transition-colors';
 
-export default function HabitForm({ habit, onSubmit, onCancel }: HabitFormProps) {
+export default function HabitsForm({ habit, onSubmit, onCancel }: HabitFormProps) {
   const isEdit = Boolean(habit);
 
   const [values, setValues] = useState<HabitFormValues>({

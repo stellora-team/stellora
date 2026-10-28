@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import HabitForm from './HabitForm';
+import HabitForm from './HabitsForm';
 import { ALL_DAYS, formatDays, type Habit, type HabitFormValues } from './types';
 
 type Filter = 'all' | 'active' | 'done';
@@ -10,7 +10,6 @@ const FILTERS: { id: Filter; label: string }[] = [
   { id: 'done', label: 'Виконані' },
 ];
 
-// Тимчасові дані, поки немає API (його робить задача "Реалізувати API CRUD звичок")
 const INITIAL_HABITS: Habit[] = [
   {
     id: '1',
