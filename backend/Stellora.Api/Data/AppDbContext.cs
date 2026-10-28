@@ -147,7 +147,16 @@ public sealed class AppDbContext : DbContext
         
         var habit = modelBuilder.Entity<Habit>();
 
-        habit.ToTable("habits");
+        habit.ToTable("habits", table =>
+        {
+            table.HasCheckConstraint(
+                "ck_habits_scheduled_days_mask",
+                "\"ScheduledDaysMask\" BETWEEN 1 AND 127");
+        });
+        
+        habit.Property(x => x.ScheduledDaysMask)
+            .HasDefaultValue(127)
+            .IsRequired();
 
         habit.HasKey(x => x.Id);
 

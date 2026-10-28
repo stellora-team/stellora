@@ -116,6 +116,11 @@ namespace Stellora.Api.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
 
+                    b.Property<int>("ScheduledDaysMask")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(127);
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -133,7 +138,10 @@ namespace Stellora.Api.Migrations
 
                     b.HasIndex("UserId", "CreatedAtUtc");
 
-                    b.ToTable("habits", (string)null);
+                    b.ToTable("habits", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_habits_scheduled_days_mask", "\"ScheduledDaysMask\" BETWEEN 1 AND 127");
+                        });
                 });
 
             modelBuilder.Entity("Stellora.Api.Models.HabitCompletion", b =>

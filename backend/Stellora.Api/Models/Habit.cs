@@ -15,4 +15,6 @@ public sealed class Habit
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 
     public DateTime? UpdatedAtUtc { get; set; }
+    
+    public int ScheduledDaysMask { get; set; } = 127;
 }
