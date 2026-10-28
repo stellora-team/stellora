@@ -92,3 +92,28 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlZWM4ZjE5O
 
 ### без токена очікується 401
 GET {{baseUrl}}/api/users/me
+
+### зміна імені очікується 200
+PUT {{baseUrl}}/api/users/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlZWM4ZjE5OS1jZjQ5LTQzZjktYTdkNi00NDYyMzUzODMwMTIiLCJzaWQiOiI0MTFmZjI4NC1lZDE3LTRiMzAtYjFlZS05YTY4NmVmNWQ1ZGMiLCJqdGkiOiJhYTE1MGYxNy1iMjY0LTQ1ZTMtYTJiOC1jYTEzOWY4ZTgyYzAiLCJuYmYiOjE3OTMyMDI3NzcsImV4cCI6MTc5MzIwNjM3NywiaXNzIjoiU3RlbGxvcmEuQXBpIiwiYXVkIjoiU3RlbGxvcmEuQ2xpZW50cyJ9.jhBf5id7XG9upXOVJHBnCYlNBCR0pPFLhAvGRMdwUFw
+Content-Type: application/json
+
+{
+  "displayName": "Max Updated",
+  "email": "max.test@example.com"
+}
+
+###
+GET {{baseUrl}}/api/users/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlZWM4ZjE5OS1jZjQ5LTQzZjktYTdkNi00NDYyMzUzODMwMTIiLCJzaWQiOiI0MTFmZjI4NC1lZDE3LTRiMzAtYjFlZS05YTY4NmVmNWQ1ZGMiLCJqdGkiOiJhYTE1MGYxNy1iMjY0LTQ1ZTMtYTJiOC1jYTEzOWY4ZTgyYzAiLCJuYmYiOjE3OTMyMDI3NzcsImV4cCI6MTc5MzIwNjM3NywiaXNzIjoiU3RlbGxvcmEuQXBpIiwiYXVkIjoiU3RlbGxvcmEuQ2xpZW50cyJ9.jhBf5id7XG9upXOVJHBnCYlNBCR0pPFLhAvGRMdwUFw
+
+### зміна email з поточним паролем очікується 200
+PUT {{baseUrl}}/api/users/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlZWM4ZjE5OS1jZjQ5LTQzZjktYTdkNi00NDYyMzUzODMwMTIiLCJzaWQiOiI0MTFmZjI4NC1lZDE3LTRiMzAtYjFlZS05YTY4NmVmNWQ1ZGMiLCJqdGkiOiJhYTE1MGYxNy1iMjY0LTQ1ZTMtYTJiOC1jYTEzOWY4ZTgyYzAiLCJuYmYiOjE3OTMyMDI3NzcsImV4cCI6MTc5MzIwNjM3NywiaXNzIjoiU3RlbGxvcmEuQXBpIiwiYXVkIjoiU3RlbGxvcmEuQ2xpZW50cyJ9.jhBf5id7XG9upXOVJHBnCYlNBCR0pPFLhAvGRMdwUFw
+Content-Type: application/json
+
+{
+  "displayName": "Max Updated",
+  "email": "max.updated@example.com",
+  "currentPassword": "TestPassword-2026!"
+}
