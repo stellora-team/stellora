@@ -7,6 +7,7 @@ using Stellora.Api.Data;
 using AppUser = Stellora.Api.Models.User;
 using Stellora.Api.Authentication;
 using Stellora.Api.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Stellora.Api.Controllers;
 
@@ -137,6 +138,37 @@ public sealed class AuthController : ControllerBase
             accessToken,
             "Bearer",
             session.ExpiresAtUtc));
+    }
+    [Authorize]
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout(
+        CancellationToken cancellationToken)
+    {
+        Response.Headers["Cache-Control"] = "no-store";
+
+        var userIdClaim = User.FindFirst("sub")?.Value;
+        var sessionIdClaim = User.FindFirst("sid")?.Value;
+
+        if (!Guid.TryParse(userIdClaim, out var userId) ||
+            !Guid.TryParse(sessionIdClaim, out var sessionId))
+        {
+            return Unauthorized();
+        }
+
+        var now = DateTime.UtcNow;
+
+        await _dbContext.UserSessions
+            .Where(session =>
+                session.Id == sessionId &&
+                session.UserId == userId &&
+                session.RevokedAtUtc == null)
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(
+                    session => session.RevokedAtUtc,
+                    (DateTime?)now),
+                cancellationToken);
+
+        return NoContent();
     }
 
     private ObjectResult InvalidCredentials()
