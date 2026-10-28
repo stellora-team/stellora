@@ -4,4 +4,5 @@ public sealed record UserProfileResponse(
     Guid Id,
     string Email,
     string DisplayName,
-    DateTime CreatedAtUtc);
+    DateTime CreatedAtUtc,
+    string TimeZone);
