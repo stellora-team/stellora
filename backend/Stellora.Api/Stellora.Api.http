@@ -32,3 +32,63 @@ Content-Type: application/json
   "displayName": "M",
   "password": "6767676767"
 }
+
+### без токена очікується 401
+GET {{baseUrl}}/api/health/auth
+
+### з підробленим токеном також очікується 401
+GET {{baseUrl}}/api/health/auth
+Authorization: Bearer definitely-not-a-valid-token
+
+### успішний вхід: очікується 200
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "max.test@example.com",
+  "password": "TestPassword-2026!"
+}
+
+### неправильний пароль: очікується 401
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "max.test@example.com",
+  "password": "WrongPassword-2026!"
+}
+
+### невідомий email: очікується 401
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "missing-user@example.com",
+  "password": "TestPassword-2026!"
+}
+
+### з дійсним токеном очікується 200
+GET {{baseUrl}}/api/health/auth
+Authorization: Bearer TOKEN 
+
+### до виходу очікується 200
+GET {{baseUrl}}/api/health/auth
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlZWM4ZjE5OS1jZjQ5LTQzZjktYTdkNi00NDYyMzUzODMwMTIiLCJzaWQiOiI3NzM3Yzc4My01MWFiLTQzMzktOTU1My03YTY0Y2E5NWFkOWEiLCJqdGkiOiJhNWE1MjFjMC1kMzExLTQzMzctOWI4OS04N2ViNzIwM2MyMzgiLCJuYmYiOjE3OTMxOTk5NDIsImV4cCI6MTc5MzIwMzU0MiwiaXNzIjoiU3RlbGxvcmEuQXBpIiwiYXVkIjoiU3RlbGxvcmEuQ2xpZW50cyJ9.bDJrssqTlh1g68CbDANFhaxyQyDo1-dNqu3Sw-vFzWs
+
+### вихід очікується 204
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlZWM4ZjE5OS1jZjQ5LTQzZjktYTdkNi00NDYyMzUzODMwMTIiLCJzaWQiOiI3NzM3Yzc4My01MWFiLTQzMzktOTU1My03YTY0Y2E5NWFkOWEiLCJqdGkiOiJhNWE1MjFjMC1kMzExLTQzMzctOWI4OS04N2ViNzIwM2MyMzgiLCJuYmYiOjE3OTMxOTk5NDIsImV4cCI6MTc5MzIwMzU0MiwiaXNzIjoiU3RlbGxvcmEuQXBpIiwiYXVkIjoiU3RlbGxvcmEuQ2xpZW50cyJ9.bDJrssqTlh1g68CbDANFhaxyQyDo1-dNqu3Sw-vFzWs
+
+### після виходу з тим самим токеном: очікується 401
+GET {{baseUrl}}/api/health/auth
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlZWM4ZjE5OS1jZjQ5LTQzZjktYTdkNi00NDYyMzUzODMwMTIiLCJzaWQiOiI3NzM3Yzc4My01MWFiLTQzMzktOTU1My03YTY0Y2E5NWFkOWEiLCJqdGkiOiJhNWE1MjFjMC1kMzExLTQzMzctOWI4OS04N2ViNzIwM2MyMzgiLCJuYmYiOjE3OTMxOTk5NDIsImV4cCI6MTc5MzIwMzU0MiwiaXNzIjoiU3RlbGxvcmEuQXBpIiwiYXVkIjoiU3RlbGxvcmEuQ2xpZW50cyJ9.bDJrssqTlh1g68CbDANFhaxyQyDo1-dNqu3Sw-vFzWs
+
+### вихід без токена очікується 401
+POST {{baseUrl}}/api/auth/logout
+
+### cвій профіль очікується 200
+GET {{baseUrl}}/api/users/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlZWM4ZjE5OS1jZjQ5LTQzZjktYTdkNi00NDYyMzUzODMwMTIiLCJzaWQiOiIyNWUyOTljNC1iOTA0LTQ4NTItYTYzYy02OTA0ZDU0ODliNzMiLCJqdGkiOiI1OTA2Mzk1OC1mYzEzLTQyYmYtOGNiNS0wM2RlZWVjMjYxNmUiLCJuYmYiOjE3OTMyMDEwNjgsImV4cCI6MTc5MzIwNDY2OCwiaXNzIjoiU3RlbGxvcmEuQXBpIiwiYXVkIjoiU3RlbGxvcmEuQ2xpZW50cyJ9.tDQ0W_jOoUv7axJYQuFFBLXws--0GS7Y-ORtcyhsBBU
+
+### без токена очікується 401
+GET {{baseUrl}}/api/users/me
