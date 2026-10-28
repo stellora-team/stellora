@@ -14,6 +14,8 @@ public sealed class AppDbContext : DbContext
     public DbSet<UserSession> UserSessions => Set<UserSession>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Habit> Habits => Set<Habit>();
+    public DbSet<HabitCompletion> HabitCompletions
+        => Set<HabitCompletion>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -173,5 +175,30 @@ public sealed class AppDbContext : DbContext
             .OnDelete(DeleteBehavior.Restrict);
 
         habit.HasIndex(x => new { x.UserId, x.CreatedAtUtc });
+        var completion = modelBuilder.Entity<HabitCompletion>();
+
+        completion.ToTable("habit_completions");
+
+        completion.HasKey(x => x.Id);
+
+        completion.Property(x => x.CompletedOn)
+            .HasColumnType("date")
+            .IsRequired();
+
+        completion.Property(x => x.CreatedAtUtc)
+            .IsRequired();
+
+        completion.HasOne<Habit>()
+            .WithMany()
+            .HasForeignKey(x => x.HabitId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        completion.HasIndex(x => new
+            {
+                x.HabitId,
+                x.CompletedOn
+            })
+            .IsUnique()
+            .HasDatabaseName("ux_habit_completions_habit_date");
     }
 }

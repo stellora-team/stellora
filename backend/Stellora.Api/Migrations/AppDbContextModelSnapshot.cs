@@ -136,6 +136,30 @@ namespace Stellora.Api.Migrations
                     b.ToTable("habits", (string)null);
                 });
 
+            modelBuilder.Entity("Stellora.Api.Models.HabitCompletion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly>("CompletedOn")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("HabitId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HabitId", "CompletedOn")
+                        .IsUnique()
+                        .HasDatabaseName("ux_habit_completions_habit_date");
+
+                    b.ToTable("habit_completions", (string)null);
+                });
+
             modelBuilder.Entity("Stellora.Api.Models.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -216,6 +240,15 @@ namespace Stellora.Api.Migrations
                     b.HasOne("Stellora.Api.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Stellora.Api.Models.HabitCompletion", b =>
+                {
+                    b.HasOne("Stellora.Api.Models.Habit", null)
+                        .WithMany()
+                        .HasForeignKey("HabitId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
