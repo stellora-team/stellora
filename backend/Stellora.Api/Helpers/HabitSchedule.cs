@@ -34,4 +34,13 @@ public static class HabitSchedule
             .Where(day => (mask & (1 << (day - 1))) != 0)
             .ToArray();
     }
+    
+    public static int GetDayMask(DateOnly date)
+    {
+        var dayNumber = date.DayOfWeek == DayOfWeek.Sunday
+            ? 7
+            : (int)date.DayOfWeek;
+
+        return 1 << (dayNumber - 1);
+    }
 }

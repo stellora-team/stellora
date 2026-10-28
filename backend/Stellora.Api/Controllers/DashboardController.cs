@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Stellora.Api.Contracts.Dashboard;
 using Stellora.Api.Data;
+using Stellora.Api.Helpers;
 
 namespace Stellora.Api.Controllers;
 
@@ -51,9 +52,14 @@ public sealed class DashboardController : ControllerBase
 
         var today = DateOnly.FromDateTime(localNow.DateTime);
 
+        var todayMask = HabitSchedule.GetDayMask(today);
+
         var habitsQuery = _dbContext.Habits
             .AsNoTracking()
             .Where(habit => habit.UserId == userId);
+
+        var scheduledQuery = habitsQuery
+            .Where(habit => (habit.ScheduledDaysMask & todayMask) != 0);
 
         var totalCount = await habitsQuery
             .CountAsync(cancellationToken);
@@ -65,7 +71,17 @@ public sealed class DashboardController : ControllerBase
                     completion.CompletedOn == today),
                 cancellationToken);
 
-        var items = await habitsQuery
+        var scheduledTodayCount = await scheduledQuery
+            .CountAsync(cancellationToken);
+
+        var completedScheduledTodayCount = await scheduledQuery
+            .CountAsync(
+                habit => _dbContext.HabitCompletions.Any(completion =>
+                    completion.HabitId == habit.Id &&
+                    completion.CompletedOn == today),
+                cancellationToken);
+
+        var items = await scheduledQuery
             .OrderByDescending(habit => habit.CreatedAtUtc)
             .ThenByDescending(habit => habit.Id)
             .Take(5)
@@ -86,6 +102,8 @@ public sealed class DashboardController : ControllerBase
             new DashboardHabitsResponse(
                 totalCount,
                 completedTodayCount,
+                scheduledTodayCount,
+                completedScheduledTodayCount,
                 items)));
     }
 }

@@ -6,6 +6,7 @@ using Npgsql;
 using Stellora.Api.Contracts.Habits;
 using Stellora.Api.Data;
 using Stellora.Api.Models;
+using Stellora.Api.Helpers;
 
 namespace Stellora.Api.Controllers;
 
@@ -21,6 +22,15 @@ public sealed class HabitCompletionsController : ControllerBase
     {
         _dbContext = dbContext;
     }
+    private static DateOnly GetLocalDate(
+        DateTimeOffset now,
+        string timeZoneId)
+    {
+        var timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+        var localNow = TimeZoneInfo.ConvertTime(now, timeZone);
+
+        return DateOnly.FromDateTime(localNow.DateTime);
+    }
 
     [HttpPut("today")]
     public async Task<IActionResult> CompleteToday(
@@ -32,16 +42,16 @@ public sealed class HabitCompletionsController : ControllerBase
             return Unauthorized();
         }
 
-        var timeZoneId = await GetOwnedHabitTimeZone(
+        var context = await GetOwnedHabitContext(
             habitId, userId, cancellationToken);
 
-        if (timeZoneId is null)
+        if (context is null)
         {
             return NotFound();
         }
 
         var now = DateTimeOffset.UtcNow;
-        var today = GetLocalDate(now, timeZoneId);
+        var today = GetLocalDate(now, context.TimeZone);
 
         var alreadyCompleted = await _dbContext.HabitCompletions
             .AnyAsync(
@@ -53,7 +63,17 @@ public sealed class HabitCompletionsController : ControllerBase
         {
             return NoContent();
         }
+        
+        var todayMask = HabitSchedule.GetDayMask(today);
 
+        if ((context.ScheduledDaysMask & todayMask) == 0)
+        {
+            return Problem(
+                statusCode: StatusCodes.Status409Conflict,
+                title: "Habit is not scheduled today",
+                detail: "This habit cannot be completed on the current day.");
+        }
+        
         var completion = new HabitCompletion
         {
             HabitId = habitId,
@@ -102,15 +122,17 @@ public sealed class HabitCompletionsController : ControllerBase
             return Unauthorized();
         }
 
-        var timeZoneId = await GetOwnedHabitTimeZone(
+        var context = await GetOwnedHabitContext(
             habitId, userId, cancellationToken);
 
-        if (timeZoneId is null)
+        if (context is null)
         {
             return NotFound();
         }
 
-        var today = GetLocalDate(DateTimeOffset.UtcNow, timeZoneId);
+        var today = GetLocalDate(
+            DateTimeOffset.UtcNow,
+            context.TimeZone);
 
         await _dbContext.HabitCompletions
             .Where(completion =>
@@ -166,7 +188,11 @@ public sealed class HabitCompletionsController : ControllerBase
         return Ok(history);
     }
 
-    private Task<string?> GetOwnedHabitTimeZone(
+    private sealed record OwnedHabitContext(
+        string TimeZone,
+        int ScheduledDaysMask);
+
+    private Task<OwnedHabitContext?> GetOwnedHabitContext(
         Guid habitId,
         Guid userId,
         CancellationToken cancellationToken)
@@ -175,17 +201,9 @@ public sealed class HabitCompletionsController : ControllerBase
             from habit in _dbContext.Habits
             join user in _dbContext.Users on habit.UserId equals user.Id
             where habit.Id == habitId && habit.UserId == userId
-            select user.TimeZone
+            select new OwnedHabitContext(
+                user.TimeZone,
+                habit.ScheduledDaysMask)
         ).SingleOrDefaultAsync(cancellationToken);
-    }
-
-    private static DateOnly GetLocalDate(
-        DateTimeOffset now,
-        string timeZoneId)
-    {
-        var timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-        var localNow = TimeZoneInfo.ConvertTime(now, timeZone);
-
-        return DateOnly.FromDateTime(localNow.DateTime);
     }
 }
