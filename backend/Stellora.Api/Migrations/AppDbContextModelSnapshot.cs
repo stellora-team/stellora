@@ -22,6 +22,84 @@ namespace Stellora.Api.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Stellora.Api.Models.Category", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("ux_categories_code");
+
+                    b.ToTable("categories", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Code = "health",
+                            Name = "Здоров’я",
+                            SortOrder = 10
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Code = "learning",
+                            Name = "Навчання",
+                            SortOrder = 20
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Code = "work",
+                            Name = "Робота",
+                            SortOrder = 30
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Code = "finance",
+                            Name = "Фінанси",
+                            SortOrder = 40
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Code = "relationships",
+                            Name = "Стосунки",
+                            SortOrder = 50
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Code = "self-development",
+                            Name = "Саморозвиток",
+                            SortOrder = 60
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Code = "leisure",
+                            Name = "Відпочинок",
+                            SortOrder = 70
+                        });
+                });
+
             modelBuilder.Entity("Stellora.Api.Models.User", b =>
                 {
                     b.Property<Guid>("Id")

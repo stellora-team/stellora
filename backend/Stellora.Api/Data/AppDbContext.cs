@@ -12,6 +12,7 @@ public sealed class AppDbContext : DbContext
 
     public DbSet<User> Users => Set<User>();    // DbSet<User> дозволяє звертатися до користувачів через dbContext.Users; OnModelCreating визначає правила таблиці
     public DbSet<UserSession> UserSessions => Set<UserSession>();
+    public DbSet<Category> Categories => Set<Category>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -66,5 +67,79 @@ public sealed class AppDbContext : DbContext
             .WithMany()
             .HasForeignKey(x => x.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+        var category = modelBuilder.Entity<Category>();
+
+        category.ToTable("categories");
+
+        category.HasKey(x => x.Id);
+
+        category.Property(x => x.Id)
+            .ValueGeneratedNever();
+
+        category.Property(x => x.Code)
+            .HasMaxLength(50)
+            .IsRequired();
+
+        category.HasIndex(x => x.Code)
+            .IsUnique()
+            .HasDatabaseName("ux_categories_code");
+
+        category.Property(x => x.Name)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        category.Property(x => x.SortOrder)
+            .IsRequired();
+
+        category.HasData(
+            new Category
+            {
+                Id = 1,
+                Code = "health",
+                Name = "Здоров’я",
+                SortOrder = 10
+            },
+            new Category
+            {
+                Id = 2,
+                Code = "learning",
+                Name = "Навчання",
+                SortOrder = 20
+            },
+            new Category
+            {
+                Id = 3,
+                Code = "work",
+                Name = "Робота",
+                SortOrder = 30
+            },
+            new Category
+            {
+                Id = 4,
+                Code = "finance",
+                Name = "Фінанси",
+                SortOrder = 40
+            },
+            new Category
+            {
+                Id = 5,
+                Code = "relationships",
+                Name = "Стосунки",
+                SortOrder = 50
+            },
+            new Category
+            {
+                Id = 6,
+                Code = "self-development",
+                Name = "Саморозвиток",
+                SortOrder = 60
+            },
+            new Category
+            {
+                Id = 7,
+                Code = "leisure",
+                Name = "Відпочинок",
+                SortOrder = 70
+            });
     }
 }
