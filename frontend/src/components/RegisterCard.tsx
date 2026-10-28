@@ -3,9 +3,14 @@ import logoIcon from '../assets/icons/logo.svg';
 import messageIcon from '../assets/icons/message.svg';
 import userIcon from '../assets/icons/user.svg';
 import lockIcon from '../assets/icons/lock.svg';
-import React, { useState } from 'react';
+import { useState, type ChangeEvent, type FormEvent } from 'react';
+import './RegisterCard.css';
 
-export default function RegisterCard() {
+type RegisterCardProps = {
+  onLoginClick: () => void;
+};
+
+export default function RegisterCard({ onLoginClick }: RegisterCardProps) {
   const [user, setUser] = useState({
     name: '',
     email: '',
@@ -16,22 +21,24 @@ export default function RegisterCard() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  function handleForm(e) {
+  function handleForm(e: ChangeEvent<HTMLInputElement>) {
     const { name, value, type, checked } = e.target;
+
     setUser((prev) => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
     }));
   }
 
-  async function handleSubmit(e) {
-    e.preventDefault(); 
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     setError('');
 
     if (!user.name || !user.email || !user.password) {
       setError('Заповніть усі поля');
       return;
     }
+
     if (!user.agreement) {
       setError('Ви повинні погодитися з умовами використання');
       return;
@@ -60,122 +67,128 @@ export default function RegisterCard() {
 
       console.log('Успішна реєстрація:', data);
     } catch (err) {
-      setError(err.message || 'Помилка реєстрації. Спробуйте пізніше.');
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Помилка реєстрації. Спробуйте пізніше.',
+      );
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="relative overflow-hidden w-full max-w-[440px] p-8 rounded-[24px] bg-[#0c0a1d]/80 border border-[#7454C5]/40 text-[#FFFFFF] shadow-2xl backdrop-blur-md">
+    <div className="register-panel">
       <img
         src={logoIcon}
-        alt="logo"
-        className="absolute -top-1 right-2 w-36 pointer-events-none select-none"
+        alt=""
+        className="register-logo-star"
       />
 
-      <div className="text-center mb-8">
-        <h3 className="text-2xl font-bold mb-2">Створи свій акаунт</h3>
-        <p className="text-sm text-[rgba(234,229,255,0.7)]">
-          Почни свою подорож серед зірок ✦
-        </p>
+      <div className="register-heading">
+        <h3>Створи свій акаунт</h3>
+        <p>Почни свою подорож серед зірок ✦</p>
       </div>
 
-      <form className="flex flex-col w-full gap-4" onSubmit={handleSubmit}>
+      <form className="register-form" onSubmit={handleSubmit}>
         {error && (
-          <div className="p-3 bg-red-500/20 border border-red-500/50 rounded-xl text-red-200 text-sm text-center">
+          <div className="register-error">
             {error}
           </div>
         )}
 
-        <div className="relative">
+        <div className="register-field">
           <img
             src={userIcon}
             alt="user"
-            className="w-5 h-5 select-none absolute left-4 top-4"
+            className="register-field-icon"
           />
           <input
             value={user.name}
             name="name"
             type="text"
-            className="w-full bg-[#1b1736]/90 border border-[#443869] rounded-xl py-3 px-12 text-[#EAE5FF] placeholder:text-[#EAE5FF]/50 focus:outline-none focus:border-[#A749EE] transition-colors"
             placeholder="Ім’я"
             onChange={handleForm}
           />
         </div>
 
-        <div className="relative">
+        <div className="register-field">
           <img
             src={messageIcon}
             alt="message"
-            className="w-5 h-5 select-none absolute left-4 top-4"
+            className="register-field-icon"
           />
           <input
             value={user.email}
             name="email"
             type="email"
-            className="w-full bg-[#1b1736]/90 border border-[#443869] rounded-xl py-3 px-12 text-[#EAE5FF] placeholder:text-[#EAE5FF]/50 focus:outline-none focus:border-[#A749EE] transition-colors"
             placeholder="Email"
             onChange={handleForm}
           />
         </div>
 
-        <div className="relative">
+        <div className="register-field">
           <img
             src={lockIcon}
             alt="lock"
-            className="w-5 h-5 select-none absolute left-4 top-4"
+            className="register-field-icon"
           />
           <input
             value={user.password}
             type="password"
             name="password"
-            className="w-full bg-[#1b1736]/90 border border-[#443869] rounded-xl py-3 px-12 text-[#EAE5FF] placeholder:text-[#EAE5FF]/50 focus:outline-none focus:border-[#A749EE] transition-colors"
             placeholder="Пароль"
             onChange={handleForm}
           />
         </div>
 
-        <label className="cursor-pointer select-none flex gap-3 items-start mt-2">
+        <label className="register-agreement">
           <input
             type="checkbox"
             name="agreement"
             checked={user.agreement}
             onChange={handleForm}
-            className="accent-[#A749EE] mt-1 w-[18px] h-[18px] rounded border-[#443869] cursor-pointer"
           />
-          <p className="text-[13px] leading-relaxed text-[#EAE5FF]/70 cursor-pointer select-none">
-            Я погоджуюсь з Умовами користування та Політикою конфіденційності
+          <p>
+            Я погоджуюсь з Умовами користування та Політикою
+            конфіденційності
           </p>
         </label>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full mt-4 py-3.5 rounded-full font-bold bg-gradient-to-r from-[#7b32d9] to-[#b240e5] hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+          className="register-submit"
         >
           {loading ? 'Реєстрація...' : 'Зареєструватися'}
         </button>
       </form>
 
-      <div className="text-center my-4 text-xs text-[#EAE5FF]/50 font-medium">
+      <div className="register-divider">
         або
       </div>
 
-      <div className="flex flex-col gap-6">
-        <button 
-          type="button" 
-          className="flex items-center justify-center gap-3 w-full py-3.5 rounded-full border border-[#7454C5]/40 hover:bg-white/5 transition-colors"
+      <div>
+        <button
+          type="button"
+          className="register-google"
         >
-          <img src={googleIcon} alt="Google" className="w-5 h-5 select-none" />
-          <span className="text-sm font-medium">Продовжити з Google</span>
+          <img
+            src={googleIcon}
+            alt="Google"
+          />
+          <span>Продовжити з Google</span>
         </button>
 
-        <p className="text-center text-xs text-[#EAE5FF]/60">
+        <p className="register-footer">
           Вже маєш акаунт?
-          <span className="text-[#A749EE] font-semibold cursor-pointer hover:underline ml-1">
+          <button
+            type="button"
+            onClick={onLoginClick}
+            className="register-login-link"
+          >
             Увійти
-          </span>
+          </button>
         </p>
       </div>
     </div>
