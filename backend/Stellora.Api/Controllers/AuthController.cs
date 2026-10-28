@@ -8,6 +8,7 @@ using AppUser = Stellora.Api.Models.User;
 using Stellora.Api.Authentication;
 using Stellora.Api.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Stellora.Api.Controllers;
 
@@ -80,6 +81,8 @@ public sealed class AuthController : ControllerBase
         return StatusCode(StatusCodes.Status201Created, response);
     }
     
+    
+    [EnableRateLimiting("login")]
     [HttpPost("login")]
     public async Task<ActionResult<LoginResponse>> Login(
         [FromBody] LoginRequest request,
