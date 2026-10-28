@@ -6,6 +6,8 @@ using Stellora.Api.Authentication;
 using System.Globalization;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.OpenApi;
+using Stellora.Api.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +20,34 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
 builder.Services.AddControllers();
+
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Stellora API",
+        Version = "v1",
+        Description =
+            "Backend API for Stellora web and mobile clients."
+    });
+
+    options.AddSecurityDefinition("bearer", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        Description = "Paste accessToken without the Bearer prefix."
+    });
+
+    options.AddSecurityRequirement(document =>
+        new OpenApiSecurityRequirement
+        {
+            [new OpenApiSecuritySchemeReference("bearer", document)] = []
+        });
+
+    options.OperationFilter<PublicEndpointsOperationFilter>();
+});
+
 builder.Services.AddProblemDetails();
 builder.Services.AddSingleton<TokenService>();
 
@@ -90,6 +120,17 @@ var app = builder.Build();
 _ = app.Services.GetRequiredService<DummyPasswordVerifier>();
 
 app.UseExceptionHandler();
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint(
+            "/swagger/v1/swagger.json",
+            "Stellora API v1");
+    });
+}
 
 app.UseRouting();
 app.UseCors("Frontend");
