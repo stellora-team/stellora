@@ -1,0 +1,66 @@
+﻿name: stellora-production
+
+x-api-environment: &api-environment
+  ASPNETCORE_ENVIRONMENT: Production
+  ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=stellora;Username=stellora;Password=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}"
+  Jwt__SigningKey: "${JWT_SIGNING_KEY:?Set JWT_SIGNING_KEY}"
+  Jwt__Issuer: "Stellora.Api"
+  Jwt__Audience: "Stellora.Clients"
+  Jwt__LifetimeMinutes: "60"
+  Cors__AllowedOrigins__0: "${FRONTEND_ORIGIN:-http://localhost:5173}"
+
+services:
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: stellora
+      POSTGRES_USER: stellora
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U stellora -d stellora"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  migrate:
+    build:
+      context: .
+      dockerfile: backend/Stellora.Api/Dockerfile
+      target: migrations
+    environment: *api-environment
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Stellora.Api/Dockerfile
+      target: runtime
+    restart: unless-stopped
+    environment: *api-environment
+    ports:
+      - "127.0.0.1:5080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  postgres_data:

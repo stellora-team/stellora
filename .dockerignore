@@ -1,0 +1,13 @@
+﻿.git
+.idea
+.vs
+**/bin
+**/obj
+**/node_modules
+**/.env
+**/.env.*
+**/*.key
+**/*.pem
+**/*.pfx
+**/*.http
+**/http-client.private.env.json
