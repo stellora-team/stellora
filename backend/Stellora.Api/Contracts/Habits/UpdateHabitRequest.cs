@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Stellora.Api.Validation;
 
 namespace Stellora.Api.Contracts.Habits;
 
@@ -26,4 +27,7 @@ public sealed class UpdateHabitRequest
 
     [Range(1, int.MaxValue)]
     public int CategoryId { get; set; }
+    
+    [ScheduledDays]
+    public int[] ScheduledDays { get; set; } = [];
 }

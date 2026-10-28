@@ -6,4 +6,5 @@ public sealed record HabitResponse(
     string? Description,
     int CategoryId,
     DateTime CreatedAtUtc,
-    DateTime? UpdatedAtUtc);
+    DateTime? UpdatedAtUtc,
+    int[] ScheduledDays);

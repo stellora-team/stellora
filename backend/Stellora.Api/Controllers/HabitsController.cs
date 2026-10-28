@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Stellora.Api.Contracts.Habits;
 using Stellora.Api.Data;
 using Stellora.Api.Models;
+using Stellora.Api.Helpers;
 
 namespace Stellora.Api.Controllers;
 
@@ -50,9 +51,10 @@ public sealed class HabitsController : ControllerBase
             UserId = userId,
             CategoryId = request.CategoryId,
             Title = request.Title,
-            Description = request.Description
+            Description = request.Description,
+            ScheduledDaysMask = HabitSchedule.ToMask(request.ScheduledDays)
         };
-
+        
         _dbContext.Habits.Add(habit);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
@@ -62,7 +64,8 @@ public sealed class HabitsController : ControllerBase
             habit.Description,
             habit.CategoryId,
             habit.CreatedAtUtc,
-            habit.UpdatedAtUtc);
+            habit.UpdatedAtUtc,
+            HabitSchedule.ToDays(habit.ScheduledDaysMask));
 
         return CreatedAtAction(
             nameof(GetById),
@@ -98,7 +101,8 @@ public sealed class HabitsController : ControllerBase
                 habit.Description,
                 habit.CategoryId,
                 habit.CreatedAtUtc,
-                habit.UpdatedAtUtc))
+                habit.UpdatedAtUtc,
+                HabitSchedule.ToDays(habit.ScheduledDaysMask)))
             .ToListAsync(cancellationToken);
 
         return Ok(new HabitPageResponse(
@@ -129,9 +133,10 @@ public sealed class HabitsController : ControllerBase
                 candidate.Description,
                 candidate.CategoryId,
                 candidate.CreatedAtUtc,
-                candidate.UpdatedAtUtc))
+                candidate.UpdatedAtUtc,
+                HabitSchedule.ToDays(candidate.ScheduledDaysMask)))
             .SingleOrDefaultAsync(cancellationToken);
-
+        
         if (habit is null)
         {
             return NotFound();
@@ -178,6 +183,7 @@ public sealed class HabitsController : ControllerBase
         habit.Title = request.Title;
         habit.Description = request.Description;
         habit.CategoryId = request.CategoryId;
+        habit.ScheduledDaysMask = HabitSchedule.ToMask(request.ScheduledDays);
         habit.UpdatedAtUtc = DateTime.UtcNow;
 
         try
@@ -195,7 +201,8 @@ public sealed class HabitsController : ControllerBase
             habit.Description,
             habit.CategoryId,
             habit.CreatedAtUtc,
-            habit.UpdatedAtUtc));
+            habit.UpdatedAtUtc,
+            HabitSchedule.ToDays(habit.ScheduledDaysMask)));
     }
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(
