@@ -139,4 +139,85 @@ public sealed class HabitsController : ControllerBase
 
         return Ok(habit);
     }
+    [HttpPut("{id:guid}")]
+    public async Task<ActionResult<HabitResponse>> Update(
+        Guid id,
+        [FromBody] UpdateHabitRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (!Guid.TryParse(User.FindFirst("sub")?.Value, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var habit = await _dbContext.Habits
+            .SingleOrDefaultAsync(
+                candidate => candidate.Id == id &&
+                             candidate.UserId == userId,
+                cancellationToken);
+
+        if (habit is null)
+        {
+            return NotFound();
+        }
+
+        var categoryExists = await _dbContext.Categories
+            .AnyAsync(
+                category => category.Id == request.CategoryId,
+                cancellationToken);
+
+        if (!categoryExists)
+        {
+            ModelState.AddModelError(
+                nameof(request.CategoryId),
+                "Category does not exist.");
+
+            return ValidationProblem(ModelState);
+        }
+
+        habit.Title = request.Title;
+        habit.Description = request.Description;
+        habit.CategoryId = request.CategoryId;
+        habit.UpdatedAtUtc = DateTime.UtcNow;
+
+        try
+        {
+            await _dbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return NotFound();
+        }
+
+        return Ok(new HabitResponse(
+            habit.Id,
+            habit.Title,
+            habit.Description,
+            habit.CategoryId,
+            habit.CreatedAtUtc,
+            habit.UpdatedAtUtc));
+    }
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        if (!Guid.TryParse(User.FindFirst("sub")?.Value, out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var deletedCount = await _dbContext.Habits
+            .Where(habit =>
+                habit.Id == id &&
+                habit.UserId == userId)
+            .ExecuteDeleteAsync(cancellationToken);
+
+        if (deletedCount == 0)
+        {
+            return NotFound();
+        }
+
+        return NoContent();
+    }
 }
