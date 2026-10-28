@@ -42,7 +42,8 @@ public sealed class UsersController : ControllerBase
                 user.Id,
                 user.Email,
                 user.DisplayName,
-                user.CreatedAtUtc))
+                user.CreatedAtUtc,
+                user.TimeZone))
             .SingleOrDefaultAsync(cancellationToken);
 
         if (profile is null)
@@ -126,6 +127,7 @@ public async Task<ActionResult<UserProfileResponse>> UpdateMe(
     user.DisplayName = request.DisplayName;
     user.Email = request.Email;
     user.NormalizedEmail = normalizedEmail;
+    user.TimeZone = request.TimeZone;
 
     try
     {
@@ -145,7 +147,8 @@ public async Task<ActionResult<UserProfileResponse>> UpdateMe(
         user.Id,
         user.Email,
         user.DisplayName,
-        user.CreatedAtUtc));
+        user.CreatedAtUtc,
+        user.TimeZone));
 }
 
 private ObjectResult EmailUnavailable()

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Stellora.Api.Validation;
 
 namespace Stellora.Api.Contracts.Users;
 
@@ -26,4 +27,15 @@ public sealed class UpdateProfileRequest
 
     [StringLength(128)]
     public string? CurrentPassword { get; set; }
+    
+    private string _timeZone = string.Empty;
+
+    [Required]
+    [StringLength(100)]
+    [IanaTimeZone]
+    public string TimeZone
+    {
+        get => _timeZone;
+        set => _timeZone = value?.Trim() ?? string.Empty;
+    }
 }

@@ -45,7 +45,7 @@ POST {{baseUrl}}/api/auth/login
 Content-Type: application/json
 
 {
-  "email": "max.test@example.com",
+  "email": "max.updated@example.com",
   "password": "TestPassword-2026!"
 }
 
@@ -116,4 +116,15 @@ Content-Type: application/json
   "displayName": "Max Updated",
   "email": "max.updated@example.com",
   "currentPassword": "TestPassword-2026!"
+}
+
+### оновлення часового поясу
+PUT {{baseUrl}}/api/users/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlZWM4ZjE5OS1jZjQ5LTQzZjktYTdkNi00NDYyMzUzODMwMTIiLCJzaWQiOiIwZWViY2VkYS03MmRkLTQ2NTQtODdkZC00ZmVjN2M1MzdmMWYiLCJqdGkiOiJmMDVmYzYxYi0yYmRhLTRiODYtYjM0Ny0wNTAyZTEyNTMwODYiLCJuYmYiOjE3OTMyMDM1NDMsImV4cCI6MTc5MzIwNzE0MywiaXNzIjoiU3RlbGxvcmEuQXBpIiwiYXVkIjoiU3RlbGxvcmEuQ2xpZW50cyJ9.xfSrwZPcpd_vFj3RXm8OcOega_8Lr6785q3ITJNLxU8
+Content-Type: application/json
+
+{
+  "displayName": "Max",
+  "email": "max.updated@example.com",
+  "timeZone": "Europe/Prague"
 }

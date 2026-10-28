@@ -45,6 +45,11 @@ public sealed class AppDbContext : DbContext
         user.Property(x => x.CreatedAtUtc)
             .IsRequired();
         
+        user.Property(x => x.TimeZone)
+            .HasMaxLength(100)
+            .HasDefaultValue("UTC")
+            .IsRequired();
+        
         var session = modelBuilder.Entity<UserSession>();
 
         session.ToTable("user_sessions");
