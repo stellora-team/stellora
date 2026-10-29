@@ -788,12 +788,25 @@ export default function HomePage({
     }
   }
 
-  const [focusTaskId, setFocusTaskId] = useState('');
-  const [duration, setDuration] = useState(25 * 60);
-  const [remaining, setRemaining] = useState(25 * 60);
-  const [running, setRunning] = useState(false);
-  const [finished, setFinished] = useState(false);
-  const endRef = useRef(0);
+const [focusTaskId, setFocusTaskId] = useStoredState(`stellora:${scope}:focusTaskId`, '');
+  const [duration, setDuration] = useStoredState(`stellora:${scope}:duration`, 25 * 60);
+  const [endTime, setEndTime] = useStoredState(`stellora:${scope}:endTime`, 0);
+
+  const [remaining, setRemaining] = useState(() => {
+    if (endTime > 0) {
+      return Math.max(0, Math.round((endTime - Date.now()) / 1000));
+    }
+    return duration;
+  });
+
+  const [running, setRunning] = useState(() => endTime > 0 && remaining > 0);
+  const [finished, setFinished] = useState(() => endTime > 0 && remaining === 0);
+
+  const endRef = useRef(endTime);
+
+  useEffect(() => {
+    endRef.current = endTime;
+  }, [endTime]);
 
   useEffect(() => {
     if (!running) return;
@@ -803,26 +816,33 @@ export default function HomePage({
       if (left === 0) {
         setRunning(false);
         setFinished(true);
+        setEndTime(0);
       }
     }, 250);
     return () => window.clearInterval(id);
-  }, [running]);
+  }, [running, setEndTime]);
 
   function toggleTimer() {
     if (running) {
       setRunning(false);
+      setEndTime(0);
       return;
     }
     const startFrom = finished || remaining === 0 ? duration : remaining;
     setFinished(false);
     setRemaining(startFrom);
-    endRef.current = Date.now() + startFrom * 1000;
+
+    const newEnd = Date.now() + startFrom * 1000;
+    endRef.current = newEnd;
+    setEndTime(newEnd);
     setRunning(true);
   }
+
   function resetTimer() {
     setRunning(false);
     setFinished(false);
     setRemaining(duration);
+    setEndTime(0);
   }
   function changeDuration(delta: number) {
     if (running) return;
