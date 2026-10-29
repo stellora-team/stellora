@@ -539,18 +539,22 @@ function HabitForm({
       return;
     }
     const scheduledDaysByFrequency: Record<string, number[]> = {
-      Щодня: [0, 1, 2, 3, 4, 5, 6],
+      Щодня: [1, 2, 3, 4, 5, 6, 7],
       'По буднях': [1, 2, 3, 4, 5],
       '3 рази на тиждень': [1, 3, 5],
       'Раз на тиждень': [1],
     };
 
-    onSubmit({
+    const payload: CreateHabitDetails = {
       title: title.trim(),
       description: '',
-      ...(categoryId ? { categoryId } : {}),
       scheduledDays: scheduledDaysByFrequency[frequency],
-    });
+    };
+
+    if (categoryId) {
+        payload.categoryId = categoryId; // або parseInt(categoryId, 10), якщо API вимагає числове ID
+    }
+    onSubmit(payload);
   }
 
   return (
