@@ -3,7 +3,11 @@
 ## Backend API
 
 The login, registration, and logout forms use the Stellora API at
-`https://stellora-api.duckdns.org`. To use another deployment, set
+`https://stellora-api.duckdns.org`. After login, the home page loads the
+dashboard, categories, and habits from the API; creating, completing, and
+deleting habits are also sent to the backend. Tasks, focus sessions, and mood
+entries remain browser-local because the current API does not provide routes
+for them. To use another deployment, set
 `VITE_API_BASE_URL` in the frontend environment before starting or building
 Vite. The value is the API base URL, without an endpoint path.
 

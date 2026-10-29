@@ -1,8 +1,9 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import {
   ApiError,
+  getCurrentUser,
   loginUser,
-  logoutUser,
+  type UserProfile,
 } from '../services/authService';
 import './LoginCard.css';
 import googleIcon from '../assets/icons/google.svg';
@@ -10,6 +11,8 @@ import logoIcon from '../assets/icons/logo.svg';
 
 interface LoginCardProps {
   onRegisterClick: () => void;
+  onAuthenticated: (user: UserProfile) => void;
+  initialNotice?: string;
 }
 
 type AuthView =
@@ -17,8 +20,7 @@ type AuthView =
   | 'validation'
   | 'error'
   | 'offline'
-  | 'recovery'
-  | 'success';
+  | 'recovery';
 
 interface FieldErrors {
   email?: string;
@@ -97,27 +99,11 @@ function RefreshIcon() {
   );
 }
 
-function CheckIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="m5 12.5 4.5 4.5L19 7"
-        stroke="currentColor" strokeWidth="2.2"
-        strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function ArrowLeftIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="m14 5-7 7 7 7M7 12h14"
-        stroke="currentColor" strokeWidth="1.8"
-        strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-export default function LoginCard({ onRegisterClick }: LoginCardProps) {
+export default function LoginCard({
+  onRegisterClick,
+  onAuthenticated,
+  initialNotice,
+}: LoginCardProps) {
   const [view, setView] = useState<AuthView>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -125,9 +111,8 @@ export default function LoginCard({ onRegisterClick }: LoginCardProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState(initialNotice ?? '');
   const [authError, setAuthError] = useState('');
-  const [accountEmail, setAccountEmail] = useState('');
   const [isOffline, setIsOffline] = useState(
     typeof navigator !== 'undefined' && !navigator.onLine,
   );
@@ -205,14 +190,17 @@ export default function LoginCard({ onRegisterClick }: LoginCardProps) {
     try {
       setLoading(true);
 
-      const result = await loginUser({
+      await loginUser({
         email: email.trim(),
         password,
         rememberMe,
       });
 
-      setAccountEmail(result.user.email);
-      setView('success');
+      const currentUser = await getCurrentUser();
+      if (!currentUser) {
+        throw new Error('Не вдалося завантажити профіль. Спробуйте увійти ще раз.');
+      }
+      onAuthenticated(currentUser);
     } catch (error) {
       setAuthError(
         error instanceof ApiError && error.status === 401
@@ -239,27 +227,6 @@ export default function LoginCard({ onRegisterClick }: LoginCardProps) {
     setView('login');
     setErrors({});
     setMessage('');
-  }
-
-  async function handleLogout() {
-    setLoading(true);
-    let logoutError = '';
-
-    try {
-      await logoutUser();
-    } catch (error) {
-      logoutError =
-        error instanceof Error
-          ? `Не вдалося завершити сесію на сервері: ${error.message}`
-          : 'Не вдалося завершити сесію на сервері.';
-    } finally {
-      setAccountEmail('');
-      setEmail('');
-      setPassword('');
-      setView('login');
-      setMessage(logoutError);
-      setLoading(false);
-    }
   }
 
   function handleGoogleLogin() {
@@ -299,8 +266,6 @@ export default function LoginCard({ onRegisterClick }: LoginCardProps) {
             view === 'validation' ? 'validation-panel' : ''
           } ${
             view === 'recovery' ? 'recovery-panel' : ''
-          } ${
-            view === 'success' ? 'success-panel' : ''
           }`}
           aria-labelledby="login-title"
         >
@@ -560,63 +525,6 @@ export default function LoginCard({ onRegisterClick }: LoginCardProps) {
                   Ваші цілі вже чекають на вас✦
                 </span>
               </div>
-            </div>
-          )}
-
-          {view === 'success' && (
-            <div className="success-content">
-              <div className="success-icon-badge">
-                <CheckIcon />
-              </div>
-
-              <h2 id="login-title" className="success-title">
-                Ти серед своїх зірок!
-              </h2>
-
-              
-              <p className="success-description">
-                Вхід виконано успішно.<br />
-                Tвоя подорож зі Stellora триває✦
-              </p>
-
-              <div className="active-account">
-                <span className="active-account-icon">
-                  <MailIcon />
-                </span>
-                <span className="active-account-details">
-                  <span>Ви увійшли як</span>
-                  <strong>{accountEmail}</strong>
-                </span>
-                <span className="active-account-check">
-                  <CheckIcon />
-                </span>
-              </div>
-
-              <button
-                className="login-submit success-submit"
-                type="button"
-                onClick={() =>
-                  setMessage('Сторінка профілю буде додана пізніше.')
-                }
-              >
-                Продовжити
-              </button>
-
-              {message && (
-                <p className="form-message form-notice" role="status">
-                  {message}
-                </p>
-              )}
-
-              <button
-                className="back-to-login"
-                type="button"
-                onClick={handleLogout}
-                disabled={loading}
-              >
-                <ArrowLeftIcon />
-                <span>На головну</span>
-              </button>
             </div>
           )}
         </section>

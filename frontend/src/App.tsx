@@ -1,19 +1,110 @@
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import LoginCard from './components/LoginCard';
 import RegisterCard from './components/RegisterCard';
+import HomePage from './pages/HomePage';
+import ProfilePage from './pages/ProfilePage';
+import { getCurrentUser, logoutUser, type UserProfile } from './services/authService';
 import logoIcon from './assets/icons/logo.svg';
 import './App.css';
 
 
-type AuthPage = 'login' | 'register';
+type AuthPage = 'login' | 'register' | 'home' | 'profile';
 
 function App() {
   const [page, setPage] = useState<AuthPage>('register');
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [checkingSession, setCheckingSession] = useState(true);
+  const [authNotice, setAuthNotice] = useState('');
+
+  useEffect(() => {
+    let active = true;
+
+    getCurrentUser()
+      .then((currentUser) => {
+        if (!active) return;
+        if (currentUser) {
+          setUser(currentUser);
+          setPage('home');
+        }
+      })
+      .catch((error: unknown) => {
+        if (!active) return;
+        setAuthNotice(
+          error instanceof Error
+            ? `Не вдалося перевірити сесію: ${error.message}`
+            : 'Не вдалося перевірити сесію.',
+        );
+        setPage('login');
+      })
+      .finally(() => {
+        if (active) setCheckingSession(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  async function handleLogout() {
+    let notice = '';
+    try {
+      await logoutUser();
+    } catch (error) {
+      notice =
+        error instanceof Error
+          ? `Не вдалося завершити сесію на сервері: ${error.message}`
+          : 'Не вдалося завершити сесію на сервері.';
+    } finally {
+      setUser(null);
+      setAuthNotice(notice);
+      setPage('login');
+    }
+  }
+
+  if (checkingSession) {
+    return (
+      <main className="app-loading" role="status">
+        Перевіряємо сесію…
+      </main>
+    );
+  }
+
+  if (page === 'home' && user) {
+    return (
+      <HomePage
+        userName={user.displayName}
+        userId={user.id}
+        onLogout={handleLogout}
+        onNavigate={(destination) => {
+          if (destination === 'profile') {
+            setPage('profile');
+          }
+        }}
+      />
+    );
+  }
+
+  if (page === 'profile' && user) {
+    return (
+      <ProfilePage
+        userName={user.displayName}
+        onBack={() => setPage('home')}
+      />
+    );
+  }
 
   if (page === 'login') {
     return (
-      <LoginCard onRegisterClick={() => setPage('register')} />
+      <LoginCard
+        onRegisterClick={() => setPage('register')}
+        onAuthenticated={(authenticatedUser) => {
+          setUser(authenticatedUser);
+          setAuthNotice('');
+          setPage('home');
+        }}
+        initialNotice={authNotice}
+      />
     );
   }
 

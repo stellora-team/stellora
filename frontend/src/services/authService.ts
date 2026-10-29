@@ -32,6 +32,14 @@ interface ApiErrorResponse {
   errors?: Record<string, string[]>;
 }
 
+export interface UserProfile {
+  id: string;
+  email: string;
+  displayName: string;
+  createdAtUtc: string;
+  timeZone: string;
+}
+
 const API_BASE_URL = (
   import.meta.env.VITE_API_BASE_URL ?? 'https://stellora-api.duckdns.org'
 ).replace(/\/+$/, '');
@@ -50,21 +58,50 @@ export class ApiError extends Error {
   }
 }
 
+function translateApiMessage(message: string): string {
+  if (/field password.*minimum length of 12.*maximum length of 128/i.test(message)) {
+    return 'Пароль має містити від 12 до 128 символів.';
+  }
+  if (/email.*not a valid e-?mail address/i.test(message)) {
+    return 'Введіть коректну адресу електронної пошти, наприклад name@gmail.com.';
+  }
+  return message;
+}
+
 function getApiErrorMessage(payload: unknown, status: number): string {
   if (typeof payload === 'string' && payload.trim()) {
-    return payload;
+    return translateApiMessage(payload);
   }
 
   if (payload && typeof payload === 'object') {
     const error = payload as ApiErrorResponse;
-    const validationMessage = error.errors
-      ? Object.values(error.errors).flat().join(' ')
-      : '';
+    const validationMessages = error.errors
+      ? Object.entries(error.errors).flatMap(([field, messages]) =>
+          messages.map((message) => {
+            if (
+              /password/i.test(field) &&
+              /minimum length|maximum length|length/i.test(message)
+            ) {
+              return 'Пароль має містити від 12 до 128 символів.';
+            }
+            if (/email/i.test(field) && /already|exists|taken|duplicate/i.test(message)) {
+              return 'Ця електронна пошта вже зареєстрована.';
+            }
+            if (
+              (/email/i.test(field) && /valid|format|address/i.test(message)) ||
+              /e-?mail address/i.test(message)
+            ) {
+              return 'Введіть коректну адресу електронної пошти, наприклад name@gmail.com.';
+            }
+            return message;
+          }),
+        )
+      : [];
 
     return (
-      validationMessage ||
-      error.detail ||
-      error.message ||
+      validationMessages.join(' ') ||
+      (error.detail ? translateApiMessage(error.detail) : '') ||
+      (error.message ? translateApiMessage(error.message) : '') ||
       error.title ||
       `Помилка запиту до сервера (${status}).`
     );
@@ -156,6 +193,34 @@ function readStoredSession(): LoginResponse | null {
   }
 
   return session;
+}
+
+export async function getCurrentUser(): Promise<UserProfile | null> {
+  const session = readStoredSession();
+  if (!session) {
+    return null;
+  }
+
+  try {
+    return await request<UserProfile>('/api/users/me', {}, session);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) {
+      clearStoredSession();
+      return null;
+    }
+    throw error;
+  }
+}
+
+export async function authenticatedRequest<T>(
+  path: string,
+  options: RequestInit = {},
+): Promise<T> {
+  const session = readStoredSession();
+  if (!session) {
+    throw new Error('Сесія завершилася. Увійдіть знову.');
+  }
+  return request<T>(path, options, session);
 }
 
 function saveSession(session: LoginResponse, rememberMe: boolean): void {

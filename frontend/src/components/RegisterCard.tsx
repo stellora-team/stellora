@@ -11,6 +11,8 @@ type RegisterCardProps = {
   onLoginClick: () => void;
 };
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
 export default function RegisterCard({ onLoginClick }: RegisterCardProps) {
   const [user, setUser] = useState({
     name: '',
@@ -36,8 +38,23 @@ export default function RegisterCard({ onLoginClick }: RegisterCardProps) {
     e.preventDefault();
     setError('');
 
-    if (!user.name.trim() || !user.email.trim() || !user.password) {
-      setError('Заповніть усі поля');
+    if (!user.name.trim()) {
+      setError('Введіть своє ім’я.');
+      return;
+    }
+
+    if (!user.email.trim()) {
+      setError('Введіть адресу електронної пошти.');
+      return;
+    }
+
+    if (!EMAIL_PATTERN.test(user.email.trim())) {
+      setError('Введіть коректну адресу електронної пошти, наприклад name@gmail.com.');
+      return;
+    }
+
+    if (user.password.length < 12 || user.password.length > 128) {
+      setError('Пароль має містити від 12 до 128 символів.');
       return;
     }
 
@@ -99,9 +116,9 @@ export default function RegisterCard({ onLoginClick }: RegisterCardProps) {
         <p>Почни свою подорож серед зірок ✦</p>
       </div>
 
-      <form className="register-form" onSubmit={handleSubmit}>
+      <form className="register-form" onSubmit={handleSubmit} noValidate>
         {error && (
-          <div className="register-error">
+          <div className="register-error" role="alert">
             {error}
           </div>
         )}

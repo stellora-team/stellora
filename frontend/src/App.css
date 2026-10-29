@@ -303,3 +303,11 @@
     transition: none !important;
   }
 }
+.app-loading {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  color: #f3eeff;
+  background: #090822;
+  font-family: Inter, Arial, sans-serif;
+}

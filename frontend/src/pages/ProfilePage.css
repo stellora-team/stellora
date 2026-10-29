@@ -1,0 +1,37 @@
+.profile-page {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 24px;
+  color: #f3eeff;
+  background: #090822;
+  font-family: Inter, Arial, sans-serif;
+}
+
+.profile-placeholder {
+  display: grid;
+  gap: 16px;
+  width: min(100%, 520px);
+  padding: 32px;
+  background: #12103a;
+  border: 1px solid #6a3aa6;
+  border-radius: 20px;
+}
+
+.profile-placeholder h1 {
+  margin: 0;
+}
+
+.profile-placeholder p {
+  margin: 0;
+}
+
+.profile-placeholder button {
+  justify-self: start;
+  padding: 10px 18px;
+  color: #fff;
+  background: linear-gradient(135deg, #5a2daa, #c44dd9);
+  border: 1px solid #d8a0ff;
+  border-radius: 999px;
+  cursor: pointer;
+}
