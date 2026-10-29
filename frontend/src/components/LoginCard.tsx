@@ -1,5 +1,9 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { loginUser, logoutUser } from '../services/authService';
+import {
+  ApiError,
+  loginUser,
+  logoutUser,
+} from '../services/authService';
 import './LoginCard.css';
 import googleIcon from '../assets/icons/google.svg';
 import logoIcon from '../assets/icons/logo.svg';
@@ -120,10 +124,9 @@ export default function LoginCard({ onRegisterClick }: LoginCardProps) {
   const [rememberMe, setRememberMe] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [recoverySent, setRecoverySent] = useState(false);
-  const [recoveryLoading, setRecoveryLoading] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [message, setMessage] = useState('');
+  const [authError, setAuthError] = useState('');
   const [accountEmail, setAccountEmail] = useState('');
   const [isOffline, setIsOffline] = useState(
     typeof navigator !== 'undefined' && !navigator.onLine,
@@ -134,6 +137,7 @@ export default function LoginCard({ onRegisterClick }: LoginCardProps) {
       setIsOffline(false);
       setView((current) => current === 'offline' ? 'login' : current);
       setMessage('');
+      setAuthError('');
     }
 
     function handleOffline() {
@@ -157,11 +161,12 @@ export default function LoginCard({ onRegisterClick }: LoginCardProps) {
       [field]: undefined,
     }));
 
-    if (view === 'validation') {
+    if (view === 'validation' || view === 'error') {
       setView('login');
     }
 
     setMessage('');
+    setAuthError('');
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -170,6 +175,7 @@ export default function LoginCard({ onRegisterClick }: LoginCardProps) {
     if (loading) return;
 
     setMessage('');
+    setAuthError('');
     const nextErrors: FieldErrors = {};
 
     if (!email.trim()) {
@@ -207,7 +213,14 @@ export default function LoginCard({ onRegisterClick }: LoginCardProps) {
 
       setAccountEmail(result.user.email);
       setView('success');
-    } catch {
+    } catch (error) {
+      setAuthError(
+        error instanceof ApiError && error.status === 401
+          ? 'Неправильна пошта або пароль. Перевірте дані та спробуйте ще раз.'
+          : error instanceof Error
+            ? error.message
+            : 'Не вдалося увійти. Спробуйте ще раз.',
+      );
       setView('error');
     } finally {
       setLoading(false);
@@ -219,54 +232,34 @@ export default function LoginCard({ onRegisterClick }: LoginCardProps) {
 
     setErrors({});
     setMessage('');
-    setRecoverySent(false);
     setView('recovery');
-  }
-
-  async function handleRecoverySubmit(
-    event: FormEvent<HTMLFormElement>,
-  ) {
-    event.preventDefault();
-
-    if (recoveryLoading) return;
-
-    const normalizedEmail = email.trim();
-
-    if (!normalizedEmail) {
-      setMessage('Введіть адресу електронної пошти.');
-      return;
-    }
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
-      setMessage('Перевірте правильність адреси електронної пошти.');
-      return;
-    }
-
-    setMessage('');
-    setRecoveryLoading(true);
-
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1200));
-      setRecoverySent(true);
-    } finally {
-      setRecoveryLoading(false);
-    }
   }
 
   function returnToLogin() {
     setView('login');
     setErrors({});
     setMessage('');
-    setRecoverySent(false);
   }
 
-  function handleLogout() {
-    logoutUser();
-    setAccountEmail('');
-    setEmail('');
-    setPassword('');
-    setView('login');
-    setMessage('');
+  async function handleLogout() {
+    setLoading(true);
+    let logoutError = '';
+
+    try {
+      await logoutUser();
+    } catch (error) {
+      logoutError =
+        error instanceof Error
+          ? `Не вдалося завершити сесію на сервері: ${error.message}`
+          : 'Не вдалося завершити сесію на сервері.';
+    } finally {
+      setAccountEmail('');
+      setEmail('');
+      setPassword('');
+      setView('login');
+      setMessage(logoutError);
+      setLoading(false);
+    }
   }
 
   function handleGoogleLogin() {
@@ -292,7 +285,7 @@ export default function LoginCard({ onRegisterClick }: LoginCardProps) {
           className="header-register-button"
           type="button"
           onClick={onRegisterClick}
-          disabled={loading || recoveryLoading}
+          disabled={loading}
         >
           Зареєструватися
         </button>
@@ -328,10 +321,8 @@ export default function LoginCard({ onRegisterClick }: LoginCardProps) {
                     <AlertIcon />
                   </span>
                   <span className="auth-status-copy">
-                    <strong>Неправильна пошта або пароль</strong>
-                    <span>
-                      Перевірте дані та спробуйте ще раз.
-                    </span>
+                    <strong>Не вдалося увійти</strong>
+                    <span>{authError}</span>
                   </span>
                 </div>
               )}
@@ -543,85 +534,24 @@ export default function LoginCard({ onRegisterClick }: LoginCardProps) {
           {view === 'recovery' && (
             <div className="recovery-content">
               <div className="recovery-icon-badge">
-                {recoverySent ? <CheckIcon /> : <MailIcon />}
+                <MailIcon />
               </div>
 
               <h2 id="login-title" className="recovery-title">
-                {recoverySent ? 'Перевірте пошту' : 'Забули пароль?'}
+                Забули пароль?
               </h2>
 
               <p className="recovery-description">
-                {recoverySent
-                  ? 'Якщо акаунт із цією адресою існує, інструкція з відновлення буде надіслана на пошту.'
-                  : 'Вкажіть пошту вашого аккаунту - ми надішлемо лист із посиланням для відновлення пароля.'}
+                Відновлення пароля поки не підтримується сервером. Зверніться до служби підтримки.
               </p>
 
-              {!recoverySent ? (
-                <form
-                  className="recovery-form"
-                  onSubmit={handleRecoverySubmit}
-                  noValidate
-                >
-                  <label className="recovery-label" htmlFor="recovery-email">
-                    Електронна пошта
-                  </label>
-
-                  <div className="login-field recovery-input">
-                    <span className="field-icon">
-                      <MailIcon />
-                    </span>
-                    <input
-                      id="recovery-email"
-                      type="email"
-                      autoComplete="email"
-                      placeholder="Email"
-                      value={email}
-                      onChange={(event) => setEmail(event.target.value)}
-                      disabled={recoveryLoading}
-                    />
-                  </div>
-
-                  {message && (
-                    <p className="field-error-text" role="alert">
-                      <AlertIcon />
-                      <span>{message}</span>
-                    </p>
-                  )}
-
-                  <button
-                    className="login-submit recovery-submit"
-                    type="submit"
-                    disabled={recoveryLoading}
-                  >
-                    {recoveryLoading && (
-                      <span className="login-spinner" aria-hidden="true" />
-                    )}
-                    {recoveryLoading
-                      ? 'Надсилаємо...'
-                      : 'Надіслати лист'}
-                  </button>
-                </form>
-              ) : (
-                <button
-                  className="login-submit recovery-submit"
-                  type="button"
-                  onClick={returnToLogin}
-                >
-                  Повернутися до входу
-                </button>
-              )}
-
-              {!recoverySent && (
-                <button
-                  className="back-to-login"
-                  type="button"
-                  onClick={returnToLogin}
-                  disabled={recoveryLoading}
-                >
-                  <ArrowLeftIcon />
-                  <span>Повернутися до входу</span>
-                </button>
-              )}
+              <button
+                className="login-submit recovery-submit"
+                type="button"
+                onClick={returnToLogin}
+              >
+                Повернутися до входу
+              </button>
 
               
               <div className="security-hint">
@@ -682,6 +612,7 @@ export default function LoginCard({ onRegisterClick }: LoginCardProps) {
                 className="back-to-login"
                 type="button"
                 onClick={handleLogout}
+                disabled={loading}
               >
                 <ArrowLeftIcon />
                 <span>На головну</span>

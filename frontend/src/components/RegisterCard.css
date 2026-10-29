@@ -13,6 +13,13 @@
   border-radius: 22px;
 }
 
+.register-success-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 430px;
+}
+
 .register-panel::before {
   content: "";
   position: absolute;

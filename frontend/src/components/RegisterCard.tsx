@@ -4,6 +4,7 @@ import messageIcon from '../assets/icons/message.svg';
 import userIcon from '../assets/icons/user.svg';
 import lockIcon from '../assets/icons/lock.svg';
 import { useState, type ChangeEvent, type FormEvent } from 'react';
+import { registerUser } from '../services/authService';
 import './RegisterCard.css';
 
 type RegisterCardProps = {
@@ -20,6 +21,7 @@ export default function RegisterCard({ onLoginClick }: RegisterCardProps) {
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [registered, setRegistered] = useState(false);
 
   function handleForm(e: ChangeEvent<HTMLInputElement>) {
     const { name, value, type, checked } = e.target;
@@ -34,7 +36,7 @@ export default function RegisterCard({ onLoginClick }: RegisterCardProps) {
     e.preventDefault();
     setError('');
 
-    if (!user.name || !user.email || !user.password) {
+    if (!user.name.trim() || !user.email.trim() || !user.password) {
       setError('Заповніть усі поля');
       return;
     }
@@ -47,25 +49,13 @@ export default function RegisterCard({ onLoginClick }: RegisterCardProps) {
     try {
       setLoading(true);
 
-      const response = await fetch('https://', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: user.name,
-          email: user.email,
-          password: user.password,
-        }),
+      await registerUser({
+        displayName: user.name.trim(),
+        email: user.email.trim(),
+        password: user.password,
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Помилка реєстрації');
-      }
-
-      console.log('Успішна реєстрація:', data);
+      setRegistered(true);
     } catch (err) {
       setError(
         err instanceof Error
@@ -75,6 +65,25 @@ export default function RegisterCard({ onLoginClick }: RegisterCardProps) {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (registered) {
+    return (
+      <div className="register-panel register-success-panel">
+        <img src={logoIcon} alt="" className="register-logo-star" />
+        <div className="register-heading">
+          <h3>Акаунт створено!</h3>
+          <p>Тепер увійди, щоб продовжити свою подорож серед зірок ✦</p>
+        </div>
+        <button
+          type="button"
+          onClick={onLoginClick}
+          className="register-submit"
+        >
+          Перейти до входу
+        </button>
+      </div>
+    );
   }
 
   return (
@@ -108,6 +117,9 @@ export default function RegisterCard({ onLoginClick }: RegisterCardProps) {
             name="name"
             type="text"
             placeholder="Ім’я"
+            autoComplete="name"
+            required
+            disabled={loading}
             onChange={handleForm}
           />
         </div>
@@ -123,6 +135,9 @@ export default function RegisterCard({ onLoginClick }: RegisterCardProps) {
             name="email"
             type="email"
             placeholder="Email"
+            autoComplete="email"
+            required
+            disabled={loading}
             onChange={handleForm}
           />
         </div>
@@ -138,6 +153,9 @@ export default function RegisterCard({ onLoginClick }: RegisterCardProps) {
             type="password"
             name="password"
             placeholder="Пароль"
+            autoComplete="new-password"
+            required
+            disabled={loading}
             onChange={handleForm}
           />
         </div>
@@ -147,6 +165,7 @@ export default function RegisterCard({ onLoginClick }: RegisterCardProps) {
             type="checkbox"
             name="agreement"
             checked={user.agreement}
+            disabled={loading}
             onChange={handleForm}
           />
           <p>
@@ -172,6 +191,8 @@ export default function RegisterCard({ onLoginClick }: RegisterCardProps) {
         <button
           type="button"
           className="register-google"
+          onClick={() => setError('Вхід через Google ще не підключено.')}
+          disabled={loading}
         >
           <img
             src={googleIcon}
@@ -186,6 +207,7 @@ export default function RegisterCard({ onLoginClick }: RegisterCardProps) {
             type="button"
             onClick={onLoginClick}
             className="register-login-link"
+            disabled={loading}
           >
             Увійти
           </button>

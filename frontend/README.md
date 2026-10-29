@@ -1,5 +1,20 @@
 # React + TypeScript + Vite
 
+## Backend API
+
+The login, registration, and logout forms use the Stellora API at
+`https://stellora-api.duckdns.org`. To use another deployment, set
+`VITE_API_BASE_URL` in the frontend environment before starting or building
+Vite. The value is the API base URL, without an endpoint path.
+
+The API documentation is available at
+`https://stellora-api.duckdns.org/swagger/index.html`. The API root `/` may
+return `404`; use the Swagger page or API routes such as `/api/auth/login`.
+Credentials requested to open the documentation are separate from a Stellora
+user account. Swagger's **Authorize** control is for trying protected
+endpoints from the documentation page; the app sends its login token
+automatically.
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:
