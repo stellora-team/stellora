@@ -538,11 +538,14 @@ function HabitForm({
       setError('Введіть назву звички');
       return;
     }
+    const todayNum = new Date().getDay();
+    const currentDay = todayNum === 0 ? 7 : todayNum;
+
     const scheduledDaysByFrequency: Record<string, number[]> = {
       Щодня: [1, 2, 3, 4, 5, 6, 7],
-      'По буднях': [1, 2, 3, 4, 5],
-      '3 рази на тиждень': [1, 3, 5],
-      'Раз на тиждень': [1],
+      'По буднях': Array.from(new Set([1, 2, 3, 4, 5, currentDay])),
+      '3 рази на тиждень': Array.from(new Set([1, 3, 5, currentDay])),
+      'Раз на тиждень': [currentDay], 
     };
 
     const payload: CreateHabitDetails = {
@@ -552,7 +555,7 @@ function HabitForm({
     };
 
     if (categoryId) {
-        payload.categoryId = categoryId; // або parseInt(categoryId, 10), якщо API вимагає числове ID
+        payload.categoryId = categoryId; 
     }
     onSubmit(payload);
   }
@@ -842,6 +845,9 @@ const [focusTaskId, setFocusTaskId] = useStoredState(`stellora:${scope}:focusTas
     setRunning(false);
     setFinished(false);
     setRemaining(duration);
+    setEndTime(0);
+
+    endRef.current = 0;
     setEndTime(0);
   }
   function changeDuration(delta: number) {
