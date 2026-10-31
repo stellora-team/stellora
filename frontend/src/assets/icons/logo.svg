@@ -1,0 +1,14 @@
+<svg width="282" height="141" viewBox="0 0 282 141" fill="none" xmlns="http://www.w3.org/2000/svg">
+<foreignObject x="-3.3" y="-3.3" width="288.25" height="147.25"><div xmlns="http://www.w3.org/1999/xhtml" style="backdrop-filter:blur(13.9px);clip-path:url(#bgblur_0_6_8_clip_path);height:100%;width:100%"></div></foreignObject><g opacity="0.45" filter="url(#filter0_f_6_8)" data-figma-bg-blur-radius="27.8">
+<path d="M24.5 70.325C84.425 69.855 152.575 69.62 173.725 66.33C185.945 64.215 191.585 56.46 193.23 24.5C194.875 56.46 200.515 64.215 212.735 66.33C221.665 68.68 237.175 69.855 257.15 70.325C237.175 70.795 221.665 71.97 212.735 74.32C200.515 76.435 194.875 84.19 193.23 116.15C191.585 84.19 185.945 76.435 173.725 74.32C152.575 71.03 84.425 70.795 24.5 70.325Z" fill="white"/>
+</g>
+<path d="M24.5 70.325C84.425 70.09 152.575 69.855 173.725 67.74C186.18 66.565 191.82 59.515 193.23 24.5C194.64 59.515 200.28 66.565 212.735 67.74C223.075 69.385 238.585 70.09 257.15 70.325C238.585 70.56 223.075 71.265 212.735 72.91C200.28 74.085 194.64 81.135 193.23 116.15C191.82 81.135 186.18 74.085 173.725 72.91C152.575 70.795 84.425 70.56 24.5 70.325Z" fill="white"/>
+<defs>
+<filter id="filter0_f_6_8" x="-3.3" y="-3.3" width="288.25" height="147.25" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="12.25" result="effect1_foregroundBlur_6_8"/>
+</filter>
+<clipPath id="bgblur_0_6_8_clip_path" transform="translate(3.3 3.3)"><path d="M24.5 70.325C84.425 69.855 152.575 69.62 173.725 66.33C185.945 64.215 191.585 56.46 193.23 24.5C194.875 56.46 200.515 64.215 212.735 66.33C221.665 68.68 237.175 69.855 257.15 70.325C237.175 70.795 221.665 71.97 212.735 74.32C200.515 76.435 194.875 84.19 193.23 116.15C191.585 84.19 185.945 76.435 173.725 74.32C152.575 71.03 84.425 70.795 24.5 70.325Z"/>
+</clipPath></defs>
+</svg>

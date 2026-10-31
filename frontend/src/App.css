@@ -1,184 +1,313 @@
-.counter {
-  font-size: 16px;
-  padding: 5px 10px;
-  border-radius: 5px;
-  color: var(--accent);
-  background: var(--accent-bg);
-  border: 2px solid transparent;
-  transition: border-color 0.3s;
-  margin-bottom: 24px;
 
-  &:hover {
-    border-color: var(--accent-border);
-  }
-  &:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
+
+
+.stellora-page,
+.stellora-page *,
+.stellora-page *::before,
+.stellora-page *::after {
+  box-sizing: border-box;
 }
 
-.hero {
+.stellora-page {
   position: relative;
-
-  .base,
-  .framework,
-  .vite {
-    inset-inline: 0;
-    margin: 0 auto;
-  }
-
-  .base {
-    width: 170px;
-    position: relative;
-    z-index: 0;
-  }
-
-  .framework,
-  .vite {
-    position: absolute;
-  }
-
-  .framework {
-    z-index: 1;
-    top: 34px;
-    height: 28px;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(44deg) rotateY(39deg)
-      scale(1.4);
-  }
-
-  .vite {
-    z-index: 0;
-    top: 107px;
-    height: 26px;
-    width: auto;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(40deg) rotateY(39deg)
-      scale(0.8);
-  }
-}
-
-#center {
+  isolation: isolate;
   display: flex;
   flex-direction: column;
-  gap: 25px;
-  place-content: center;
-  place-items: center;
-  flex-grow: 1;
-
-  @media (max-width: 1024px) {
-    padding: 32px 20px 24px;
-    gap: 18px;
-  }
-}
-
-#next-steps {
-  display: flex;
-  border-top: 1px solid var(--border);
-  text-align: left;
-
-  & > div {
-    flex: 1 1 0;
-    padding: 32px;
-    @media (max-width: 1024px) {
-      padding: 24px 20px;
-    }
-  }
-
-  .icon {
-    margin-bottom: 16px;
-    width: 22px;
-    height: 22px;
-  }
-
-  @media (max-width: 1024px) {
-    flex-direction: column;
-    text-align: center;
-  }
-}
-
-#docs {
-  border-right: 1px solid var(--border);
-
-  @media (max-width: 1024px) {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-  }
-}
-
-#next-steps ul {
-  list-style: none;
-  padding: 0;
-  display: flex;
-  gap: 8px;
-  margin: 32px 0 0;
-
-  .logo {
-    height: 18px;
-  }
-
-  a {
-    color: var(--text-h);
-    font-size: 16px;
-    border-radius: 6px;
-    background: var(--social-bg);
-    display: flex;
-    padding: 6px 12px;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
-    transition: box-shadow 0.3s;
-
-    &:hover {
-      box-shadow: var(--shadow);
-    }
-    .button-icon {
-      height: 18px;
-      width: 18px;
-    }
-  }
-
-  @media (max-width: 1024px) {
-    margin-top: 20px;
-    flex-wrap: wrap;
-    justify-content: center;
-
-    li {
-      flex: 1 1 calc(50% - 8px);
-    }
-
-    a {
-      width: 100%;
-      justify-content: center;
-      box-sizing: border-box;
-    }
-  }
-}
-
-#spacer {
-  height: 88px;
-  border-top: 1px solid var(--border);
-  @media (max-width: 1024px) {
-    height: 48px;
-  }
-}
-
-.ticks {
-  position: relative;
   width: 100%;
+  min-height: 100vh;
+  min-height: 100svh;
+  overflow: hidden;
+  padding: 30px 20px 17px;
+  color: #f4e3ed;
+  background-color: #0c0533;
+  background-image: url('./assets/images/stellora-login-bg.png');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  font-family: Inter, Arial, sans-serif;
+}
 
-  &::before,
-  &::after {
-    content: '';
-    position: absolute;
-    top: -4.5px;
-    border: 5px solid transparent;
+.register-page {
+  background-image: url('./assets/images/stellora-register-bg.png');
+}
+
+.register-page .stellora-header {
+  width: calc(100% + 40px);
+  margin-left: -20px;
+  padding-right: calc(4.3% + 20px);
+  padding-left: calc(4.3% + 20px);
+  border-bottom: 0;
+}
+
+.register-page .stellora-header::after {
+  position: absolute;
+  right: 12px;
+  bottom: 0;
+  left: 28px;
+  border-bottom: 1px solid rgba(131, 86, 217, 0.45);
+  content: "";
+  pointer-events: none;
+}
+
+.register-page .brand-star {
+  top: -45px;
+  left: calc(50% + 40px);
+  transform: translateX(-50%);
+}
+
+.register-page .header-register-button {
+  min-width: 162px;
+}
+
+.register-page .stellora-content {
+  grid-template-columns: minmax(0, 1fr) minmax(420px, 620px);
+}
+
+.stellora-page::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: rgba(12, 5, 51, 0.08);
+  content: "";
+  pointer-events: none;
+}
+
+.stellora-page::after {
+  position: absolute;
+  z-index: 5;
+  inset: 24px 20px 17px;
+  border: 1.5px solid #8356d9;
+  border-radius: 17px;
+  content: "";
+  pointer-events: none;
+}
+
+
+
+.stellora-header {
+  position: relative;
+  z-index: 6;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 24px;
+  flex-shrink: 0;
+  min-height: 56px;
+  padding: 0 4.3%;
+  border-bottom: 1px solid rgba(131, 86, 217, 0.45);
+}
+
+.stellora-brand {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  color: #f3eaff;
+  font-size: 29px;
+  font-weight: 400;
+  text-decoration: none;
+}
+
+.brand-star {
+  position: absolute;
+  z-index: 7;
+  top: -45px;
+  left: 40px;
+  display: block;
+  width: 112px;
+  height: 82px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 14px rgba(255, 255, 255, 0.75));
+  pointer-events: none;
+}
+
+.stellora-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(18px, 2.5vw, 38px);
+}
+
+.stellora-nav a {
+  color: #eae5ff;
+  font-size: 16px;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.stellora-nav a:hover {
+  color: #d5a1ff;
+}
+
+
+
+.header-register-button {
+  justify-self: end;
+  min-height: 44px;
+  padding: 0 24px;
+  border: 1px solid #d8a0ff;
+  border-radius: 100px;
+  background: linear-gradient(135deg, #5a2daa 46%, #bf75cc 100%);
+  color: #ddd0ff;
+  font: inherit;
+  font-size: 16px;
+  cursor: pointer;
+  transition: filter 0.2s ease, transform 0.2s ease;
+}
+
+.header-register-button:hover {
+  filter: brightness(1.15);
+}
+
+.header-register-button:active {
+  transform: scale(0.99);
+}
+
+
+
+.stellora-content {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(420px, 544px);
+  align-items: center;
+  gap: 32px;
+  flex: 1;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 28px 4.3% 17px;
+}
+
+.stellora-intro {
+  min-width: 0;
+  align-self: start;
+  padding: 60px 0 0 74px;
+}
+
+.stellora-intro .intro-brand {
+  width: 288px;
+  margin: 0 0 14px;
+  color: #daaaff;
+  font-family: Inter, Arial, sans-serif;
+  font-size: clamp(58px, 5.35vw, 77px);
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: right;
+  text-shadow: 0 4px 54.8px rgba(244, 214, 255, 0.5);
+}
+
+.stellora-intro .intro-title {
+  margin: 0 0 14px;
+  color: #f0eaff;
+  font-family: Inter, Arial, sans-serif;
+  font-size: clamp(34px, 3.2vw, 46px);
+  font-weight: 700;
+  line-height: 1.22;
+}
+
+.stellora-intro .intro-text {
+  max-width: 340px;
+  margin: 0;
+  color: #d0c5ed;
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+
+
+@media (max-width: 1000px) {
+  .stellora-header {
+    grid-template-columns: 1fr auto;
+    gap: 12px;
   }
 
-  &::before {
-    left: 0;
-    border-left-color: var(--border);
+  .stellora-nav {
+    display: none;
   }
-  &::after {
-    right: 0;
-    border-right-color: var(--border);
+
+  .stellora-content {
+    grid-template-columns: minmax(0, 544px);
+    justify-content: center;
+    padding: 30px 12px;
   }
+
+  .register-page .stellora-content {
+    grid-template-columns: minmax(0, 620px);
+  }
+
+  .stellora-intro {
+    display: none;
+  }
+}
+
+
+
+@media (max-width: 560px) {
+  .stellora-page {
+    padding: 12px 8px;
+  }
+
+  .stellora-page::after {
+    inset: 12px 8px;
+  }
+
+  .stellora-header {
+    min-height: 60px;
+    padding: 0 12px;
+  }
+
+  .register-page .stellora-header {
+    width: calc(100% + 16px);
+    margin-left: -8px;
+    padding: 0 20px;
+  }
+
+  .register-page .stellora-header::after {
+    right: 8px;
+    left: 14px;
+  }
+
+  .stellora-brand {
+    font-size: 22px;
+  }
+
+  .brand-star {
+    top: -30px;
+    left: 28px;
+    width: 78px;
+    height: 60px;
+  }
+
+  .register-page .brand-star {
+    top: -30px;
+    left: calc(50% + 26px);
+  }
+
+  .header-register-button {
+    min-height: 36px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+
+  .stellora-content {
+    padding: 24px 4px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stellora-page *,
+  .stellora-page *::before,
+  .stellora-page *::after {
+    scroll-behavior: auto !important;
+    transition: none !important;
+  }
+}
+.app-loading {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  color: #f3eeff;
+  background: #090822;
+  font-family: Inter, Arial, sans-serif;
 }
