@@ -1,0 +1,1111 @@
+.home-page,
+.home-page *,
+.home-page *::before,
+.home-page *::after {
+  box-sizing: border-box;
+}
+
+.home-page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100vh;
+  color: #f3eeff;
+  background: #090822;
+  font-family: Inter, Arial, sans-serif;
+}
+
+.home-page button,
+.home-page input,
+.home-page select {
+  font: inherit;
+  color: inherit;
+}
+
+.home-page h1,
+.home-page h2,
+.home-page h3,
+.home-page p,
+.home-page ul {
+  margin: 0;
+  padding: 0;
+}
+
+.home-page ul {
+  list-style: none;
+}
+
+.home-page button:focus-visible,
+.home-page select:focus-visible,
+.home-page input:focus-visible {
+  outline: 2px solid #c56cff;
+  outline-offset: 2px;
+}
+
+/* ===== Шапка ===== */
+
+.home-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  height: 102px;
+  padding: 18px 62px 0;
+  background: #070620;
+  border-bottom: 1px solid #33245b;
+}
+
+.home-brand {
+  color: #f3eaff;
+  font-size: 29px;
+  font-weight: 400;
+  line-height: 35px;
+  text-decoration: none;
+}
+
+.home-brand-star {
+  position: absolute;
+  top: 22px;
+  left: 100px;
+  width: 116px;
+  height: 52px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 14px rgba(255, 255, 255, 0.7));
+  pointer-events: none;
+}
+
+.home-logout {
+  margin-left: auto;
+  padding: 9px 18px;
+  color: #f3eeff;
+  background: rgba(91, 45, 170, 0.35);
+  border: 1px solid #7454c5;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.home-logout:hover {
+  background: rgba(124, 77, 220, 0.55);
+}
+
+.home-api-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+  color: #ffc9d4;
+  background: rgba(255, 65, 105, 0.12);
+  border: 1px solid rgba(255, 105, 135, 0.45);
+  border-radius: 10px;
+}
+
+.home-api-error button {
+  flex-shrink: 0;
+  padding: 6px 10px;
+  color: #f3eeff;
+  background: transparent;
+  border: 1px solid currentColor;
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+/* ===== Каркас ===== */
+
+.home-body {
+  display: grid;
+  flex: 1;
+  grid-template-columns: 189px minmax(0, 1fr);
+  align-items: start;
+  gap: 43px;
+  padding: 9px 20px 20px;
+}
+
+/* ===== Сайдбар ===== */
+
+.home-sidebar {
+  min-height: 518px;
+  padding: 14px 6px;
+  background: #0b0b29;
+  border: 1px solid #3b2865;
+  border-radius: 20px;
+}
+
+.home-sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.home-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 36px;
+  padding: 0 0 0 18px;
+  color: #f7f2ff;
+  font-size: 15px;
+  font-weight: 400;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.home-nav-item svg {
+  flex-shrink: 0;
+  color: #fff;
+}
+
+.home-nav-item:hover {
+  background: rgba(124, 77, 220, 0.16);
+}
+
+.home-nav-item.is-active {
+  font-weight: 700;
+  background: linear-gradient(90deg, #7737f8 0%, #c44dd9 100%);
+}
+
+/* ===== Основна колонка ===== */
+
+.home-main {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  min-width: 0;
+}
+
+/* ===== Банер ===== */
+
+.home-banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 101px;
+  padding: 0 34px;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgba(9, 8, 34, 0.55) 0%, rgba(9, 8, 34, 0.05) 60%),
+    #1a0f3d;
+  border: 1px solid #a06cda;
+  border-radius: 20px;
+}
+
+.home-banner h1 {
+  position: relative;
+  z-index: 1;
+  max-width: 42%;
+  overflow: hidden;
+  color: #f3eeff;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 39px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-banner-star {
+  position: absolute;
+  top: 50%;
+  left: 40%;
+  width: 260px;
+  height: 92px;
+  object-fit: contain;
+  transform: translateY(-50%);
+  filter: drop-shadow(0 0 16px rgba(255, 255, 255, 0.7));
+  pointer-events: none;
+}
+
+.home-banner-chips {
+  position: absolute;
+  right: 6px;
+  bottom: 11px;
+  display: flex;
+  align-items: center;
+  gap: 19px;
+}
+
+.home-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 12px;
+  color: #f3eeff;
+  font-size: 13px;
+  line-height: 16px;
+  white-space: nowrap;
+  background: #1b1742;
+  border: 1px solid #3e2c71;
+  border-radius: 8px;
+}
+
+.home-chip-time {
+  justify-content: center;
+  min-width: 66px;
+}
+
+/* ===== Ряди ===== */
+
+.home-row {
+  display: grid;
+  gap: 13px;
+}
+
+.home-row-top {
+  grid-template-columns: 603fr 552fr;
+  gap: 16px;
+}
+
+.home-row-middle {
+  grid-template-columns: 530fr 255fr 357fr;
+}
+
+.home-row-bottom {
+  grid-template-columns: 694fr 461fr;
+  gap: 14px;
+  margin-top: 3px;
+}
+
+/* ===== Картка ===== */
+
+.home-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 14px 15px 12px;
+  background: linear-gradient(135deg, #10102f 0%, #0a0b25 100%);
+  border: 1px solid #443079;
+  border-radius: 14px;
+}
+
+.home-row-top .home-card {
+  min-height: 255px;
+}
+
+.home-row-middle .home-card {
+  min-height: 226px;
+}
+
+.home-row-bottom .home-card {
+  min-height: 146px;
+}
+
+.home-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.home-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #f3eeff;
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 23px;
+}
+
+.home-card-title svg {
+  flex-shrink: 0;
+}
+
+.home-card-title-lg {
+  font-size: 18px;
+  line-height: 22px;
+}
+
+.home-card-sub {
+  margin-top: 3px;
+  color: #b5a8d9;
+  font-size: 12px;
+  line-height: 15px;
+}
+
+.home-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 0;
+  color: #c9aef2;
+  font-size: 12px;
+  line-height: 15px;
+  white-space: nowrap;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.home-link:hover {
+  color: #fff;
+}
+
+/* ===== Прогрес ===== */
+
+.home-progress {
+  flex-shrink: 0;
+  width: 112px;
+  padding-top: 2px;
+  font-size: 12px;
+  line-height: 15px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.home-progress-bar {
+  height: 6px;
+  margin-top: 8px;
+  overflow: hidden;
+  background: #31205d;
+  border-radius: 3px;
+}
+
+.home-progress-bar i {
+  display: block;
+  height: 100%;
+  background: #a03bfc;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+/* ===== Списки ===== */
+
+.home-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.home-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 41px;
+  padding: 0 8px 0 11px;
+  background: #121234;
+  border: 1px solid #282251;
+  border-radius: 8px;
+}
+
+.home-item-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 15px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-item-meta {
+  flex: 0 0 auto;
+  min-width: 90px;
+  color: #c0b2e7;
+  font-size: 11px;
+  line-height: 13px;
+  white-space: nowrap;
+}
+
+.home-task .home-item-meta {
+  min-width: 118px;
+}
+
+.home-item-meta-right {
+  min-width: 0;
+  color: #bdaee2;
+  text-align: right;
+}
+
+.home-habit-icon {
+  flex-shrink: 0;
+  color: #fff;
+}
+
+/* чекбокс */
+
+.home-check {
+  display: inline-flex;
+  flex: 0 0 23px;
+  align-items: center;
+  justify-content: center;
+  width: 23px;
+  height: 23px;
+  padding: 0;
+  color: #f3eeff;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  background: #19183a;
+  border: 2px solid #a366fd;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.home-check.is-done {
+  background: linear-gradient(101.31deg, #6529f7 0%, #bc37e8 86.67%);
+}
+
+/* менюшка */
+
+.home-row-menu {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.home-dots {
+  width: 22px;
+  height: 26px;
+  padding: 0;
+  color: #ede7ff;
+  font-size: 15px;
+  line-height: 1;
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.home-dots:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.home-menu-pop {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 20;
+  min-width: 110px;
+  padding: 4px;
+  background: #1b1742;
+  border: 1px solid #473078;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+.home-menu-pop button {
+  width: 100%;
+  padding: 8px 10px;
+  color: #ffb9cd;
+  font-size: 12px;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.home-menu-pop button:hover {
+  background: rgba(255, 185, 205, 0.1);
+}
+
+/* порожній стан */
+
+.home-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 41px;
+  margin-top: 10px;
+  padding: 16px 14px;
+  color: #b5a8d9;
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+  background: rgba(18, 18, 52, 0.55);
+  border: 1px dashed #3b2f75;
+  border-radius: 8px;
+}
+
+.home-card > .home-empty {
+  flex: 1;
+}
+
+/* ===== Кнопки ===== */
+
+.home-btn {
+  min-height: 36px;
+  padding: 0 14px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+  border: 1px solid #8c55ea;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: filter 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+}
+
+.home-btn-primary {
+  background: linear-gradient(101.31deg, #6529f7 0%, #bc37e8 86.67%);
+}
+
+.home-btn-outline {
+  background: #121032;
+}
+
+.home-btn:hover:not(:disabled) {
+  filter: brightness(1.15);
+}
+
+.home-btn:active:not(:disabled) {
+  transform: scale(0.99);
+}
+
+.home-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.home-card-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 12px;
+}
+
+/* ===== Найближчі справи ===== */
+
+.home-list-upcoming {
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.home-upcoming {
+  min-height: 46px;
+  padding: 0 8px 0 5px;
+  background: #11112f;
+  border-color: #29234e;
+}
+
+.home-upcoming-icon {
+  display: inline-flex;
+  flex: 0 0 36px;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  color: #fff;
+  background: #211944;
+  border: 1px solid #483477;
+  border-radius: 8px;
+}
+
+.home-upcoming-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.home-upcoming-text strong {
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 15px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-upcoming-text small {
+  overflow: hidden;
+  color: #b9aadf;
+  font-size: 11px;
+  line-height: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ===== Швидкий фокус ===== */
+
+.home-timer-card {
+  gap: 0;
+}
+
+.home-select {
+  position: relative;
+  margin-top: 8px;
+}
+
+.home-select select {
+  width: 100%;
+  height: 34px;
+  padding: 0 32px 0 12px;
+  overflow: hidden;
+  color: #f3eeff;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  background: #151438;
+  border: 1px solid #40306c;
+  border-radius: 8px;
+  cursor: pointer;
+  appearance: none;
+}
+
+.home-select select option {
+  color: #f3eeff;
+  background: #151438;
+}
+
+.home-select-arrow {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  color: #fff;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.home-timer-ring-wrap {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 0;
+}
+
+.home-timer-ring {
+  position: relative;
+  width: 88px;
+  height: 88px;
+}
+
+.home-timer-ring svg {
+  display: block;
+  transform: rotate(-90deg);
+}
+
+.home-ring-track,
+.home-ring-progress {
+  fill: none;
+  stroke-width: 6;
+}
+
+.home-ring-track {
+  stroke: #4a237a;
+}
+
+.home-ring-progress {
+  stroke: #ad3dff;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.3s linear;
+}
+
+.home-timer-ring span {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #c45aff;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 29px;
+  font-variant-numeric: tabular-nums;
+}
+
+.home-step {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  color: #d9b0ff;
+  font-size: 16px;
+  line-height: 1;
+  background: #151438;
+  border: 1px solid #40306c;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.home-step:hover:not(:disabled) {
+  border-color: #8c55ea;
+}
+
+.home-step:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.home-timer-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.home-timer-actions .home-btn-primary {
+  flex: 1;
+  min-height: 30px;
+  padding: 0 8px;
+}
+
+.home-reset {
+  flex: 0 0 36px;
+  min-height: 30px;
+  padding: 0;
+  font-size: 16px;
+}
+
+/* ===== Настрій ===== */
+
+.home-moods {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2px;
+  padding: 10px 0;
+}
+
+.home-mood {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 7px 0 5px;
+  color: #cfc0ef;
+  font-size: 10.5px;
+  line-height: 13px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.home-mood:hover {
+  background: color-mix(in srgb, var(--mood) 10%, transparent);
+}
+
+.home-mood.is-selected {
+  background: color-mix(in srgb, var(--mood) 14%, transparent);
+  border-color: var(--mood);
+}
+
+.home-mood-save {
+  align-self: center;
+  width: 74%;
+}
+
+/* ===== Мій космос ===== */
+
+.home-space {
+  position: relative;
+  min-height: 146px;
+  padding: 14px 18px;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(9, 8, 34, 0.3), rgba(9, 8, 34, 0.1)),
+    #14093a;
+  border: 1px solid #6a3aa6;
+  border-radius: 14px;
+}
+
+.home-space h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #f3eeff;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 22px;
+}
+
+.home-space-btn {
+  position: absolute;
+  right: 18px;
+  bottom: 15px;
+  width: 210px;
+  border-radius: 10px;
+}
+
+/* ===== Швидкі дії ===== */
+
+.home-quick {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 12px;
+}
+
+.home-quick button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 74px;
+  padding: 0 4px;
+  color: #f3eeff;
+  font-size: 11px;
+  line-height: 13px;
+  text-align: center;
+  background: #1c1741;
+  border: 1px solid #473078;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.home-quick button svg {
+  color: #c56cff;
+}
+
+.home-quick button:hover {
+  background: #241d52;
+  border-color: #8c55ea;
+}
+
+/* ===== Модальні вікна ===== */
+
+.home-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(5, 4, 22, 0.72);
+  backdrop-filter: blur(3px);
+}
+
+.home-modal {
+  width: 100%;
+  max-width: 420px;
+  padding: 20px;
+  background: linear-gradient(135deg, #14143a 0%, #0c0c2b 100%);
+  border: 1px solid #5a3fa5;
+  border-radius: 16px;
+  box-shadow: 0 0 40px rgba(116, 84, 197, 0.25);
+}
+
+.home-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.home-modal-head h3 {
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.home-modal-close {
+  width: 30px;
+  height: 30px;
+  color: #d9b0ff;
+  font-size: 22px;
+  line-height: 1;
+  background: none;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.home-modal-close:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.home-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.home-form label {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.home-form label > span {
+  color: #cfc0ef;
+  font-size: 12px;
+}
+
+.home-form input,
+.home-form select {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  color: #f3eeff;
+  font-size: 14px;
+  background: #151438;
+  border: 1px solid #40306c;
+  border-radius: 8px;
+  color-scheme: dark;
+}
+
+.home-form input::placeholder {
+  color: #8f82b8;
+}
+
+.home-form input:focus,
+.home-form select:focus {
+  border-color: #ba74fa;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(167, 73, 238, 0.15);
+}
+
+.home-form-row {
+  display: flex;
+  gap: 10px;
+}
+
+.home-form-error {
+  color: #ffb9cd;
+  font-size: 13px;
+}
+
+.home-form-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.home-form-actions .home-btn {
+  min-height: 40px;
+}
+
+/* ===== Адаптація ===== */
+
+@media (max-width: 1180px) {
+  .home-body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .home-sidebar {
+    min-height: 0;
+    padding: 8px;
+    overflow-x: auto;
+  }
+
+  .home-sidebar nav {
+    flex-direction: row;
+    gap: 4px;
+  }
+
+  .home-nav-item {
+    width: auto;
+    padding: 0 14px;
+    white-space: nowrap;
+  }
+
+  .home-row-top,
+  .home-row-middle,
+  .home-row-bottom {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .home-banner-star {
+    left: 50%;
+  }
+}
+
+@media (max-width: 700px) {
+  .home-header {
+    height: 84px;
+    padding: 14px 20px 0;
+  }
+
+  .home-brand {
+    font-size: 24px;
+  }
+
+  .home-brand-star {
+    top: 16px;
+    left: 62px;
+    width: 90px;
+    height: 42px;
+  }
+
+  .home-body {
+    padding: 8px 10px 14px;
+  }
+
+  .home-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 10px;
+    height: auto;
+    min-height: 130px;
+    padding: 16px 18px;
+  }
+
+  .home-banner h1 {
+    max-width: 100%;
+    font-size: 24px;
+    line-height: 30px;
+  }
+
+  .home-banner-star {
+    display: none;
+  }
+
+  .home-banner-chips {
+    position: static;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .home-card-head {
+    flex-direction: column;
+  }
+
+  .home-progress {
+    width: 100%;
+    text-align: left;
+  }
+
+  .home-task .home-item-meta {
+    min-width: 0;
+  }
+
+  .home-habit .home-item-meta {
+    display: none;
+  }
+
+  .home-quick {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .home-space {
+    min-height: 160px;
+  }
+
+  .home-space-btn {
+    left: 18px;
+    width: auto;
+  }
+
+  .home-form-row {
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-page *,
+  .home-page *::before,
+  .home-page *::after {
+    transition: none !important;
+  }
+}
