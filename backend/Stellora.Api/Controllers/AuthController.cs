@@ -94,9 +94,19 @@ public sealed class AuthController : ControllerBase
 
         var normalizedEmail = request.Email.ToUpperInvariant();
 
-        var user = await _dbContext.Users.SingleOrDefaultAsync(
-            candidate => candidate.NormalizedEmail == normalizedEmail,
-            cancellationToken);
+        await using var transaction =
+            await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+
+        var users = await _dbContext.Users
+            .FromSqlInterpolated(
+                $"""
+                 SELECT * FROM users
+                 WHERE "NormalizedEmail" = {normalizedEmail}
+                 FOR UPDATE
+                 """)
+            .ToListAsync(cancellationToken);
+
+        var user = users.SingleOrDefault();
 
         if (user is null)
         {
@@ -138,6 +148,7 @@ public sealed class AuthController : ControllerBase
         _dbContext.UserSessions.Add(session);
 
         await _dbContext.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
 
         return Ok(new LoginResponse(
             accessToken,
@@ -191,5 +202,4 @@ public sealed class AuthController : ControllerBase
             title: "Email already registered",
             detail: "An account with this email already exists.");
     }
-    
 }

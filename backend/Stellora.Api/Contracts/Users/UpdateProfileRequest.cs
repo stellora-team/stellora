@@ -24,9 +24,6 @@ public sealed class UpdateProfileRequest
         get => _email;
         set => _email = value?.Trim() ?? string.Empty;
     }
-
-    [StringLength(128)]
-    public string? CurrentPassword { get; set; }
     
     private string _timeZone = string.Empty;
 
