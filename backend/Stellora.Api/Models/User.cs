@@ -13,4 +13,6 @@ public sealed class User
     public required string PasswordHash { get; set; }
 
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
+    
+    public string TimeZone { get; set; } = "UTC";
 }
