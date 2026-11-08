@@ -42,7 +42,6 @@
   outline-offset: 2px;
 }
 
-/* ===== Шапка ===== */
 
 .home-header {
   position: relative;
@@ -110,31 +109,30 @@
   cursor: pointer;
 }
 
-/* ===== Каркас ===== */
 
 .home-body {
   display: grid;
   flex: 1;
   grid-template-columns: 189px minmax(0, 1fr);
-  align-items: start;
-  gap: 43px;
-  padding: 9px 20px 20px;
+  gap: 26px;
+  padding: 9px 30px 23px 20px;
 }
 
-/* ===== Сайдбар ===== */
 
 .home-sidebar {
-  min-height: 518px;
-  padding: 14px 6px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 560px;
+  padding: 24px 6px 20px;
   background: #0b0b29;
   border: 1px solid #3b2865;
-  border-radius: 20px;
+  border-radius: 16px;
 }
 
 .home-sidebar nav {
   display: flex;
   flex-direction: column;
-  gap: 2px;
 }
 
 .home-nav-item {
@@ -142,15 +140,15 @@
   align-items: center;
   gap: 10px;
   width: 100%;
-  height: 36px;
-  padding: 0 0 0 18px;
+  height: 38px;
+  padding: 0 8px;
   color: #f7f2ff;
   font-size: 15px;
   font-weight: 400;
   text-align: left;
   background: transparent;
   border: 0;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   transition: background 0.2s ease;
 }
@@ -165,11 +163,20 @@
 }
 
 .home-nav-item.is-active {
+  height: 40px;
   font-weight: 700;
   background: linear-gradient(90deg, #7737f8 0%, #c44dd9 100%);
 }
 
-/* ===== Основна колонка ===== */
+.home-nav-item span {
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.home-profile {
+  margin-top: auto;
+}
+
 
 .home-main {
   display: flex;
@@ -178,7 +185,21 @@
   min-width: 0;
 }
 
-/* ===== Банер ===== */
+.home-space-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.5;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.home-space h2 {
+  position: relative;
+  z-index: 1;
+}
+
 
 .home-banner {
   position: relative;
@@ -189,6 +210,7 @@
   overflow: hidden;
   background:
     linear-gradient(90deg, rgba(9, 8, 34, 0.55) 0%, rgba(9, 8, 34, 0.05) 60%),
+    url('../assets/images/planner-banner.png') center / cover,
     #1a0f3d;
   border: 1px solid #a06cda;
   border-radius: 20px;
@@ -248,7 +270,6 @@
   min-width: 66px;
 }
 
-/* ===== Ряди ===== */
 
 .home-row {
   display: grid;
@@ -270,7 +291,6 @@
   margin-top: 3px;
 }
 
-/* ===== Картка ===== */
 
 .home-card {
   display: flex;
@@ -345,7 +365,6 @@
   color: #fff;
 }
 
-/* ===== Прогрес ===== */
 
 .home-progress {
   flex-shrink: 0;
@@ -373,7 +392,6 @@
   transition: width 0.3s ease;
 }
 
-/* ===== Списки ===== */
 
 .home-list {
   display: flex;
@@ -417,6 +435,14 @@
   min-width: 118px;
 }
 
+.home-task-category {
+  flex: 0 0 auto;
+  color: #bdaee2;
+  font-size: 10px;
+  line-height: 12px;
+  white-space: nowrap;
+}
+
 .home-item-meta-right {
   min-width: 0;
   color: #bdaee2;
@@ -428,7 +454,6 @@
   color: #fff;
 }
 
-/* чекбокс */
 
 .home-check {
   display: inline-flex;
@@ -453,7 +478,6 @@
   background: linear-gradient(101.31deg, #6529f7 0%, #bc37e8 86.67%);
 }
 
-/* менюшка */
 
 .home-row-menu {
   position: relative;
@@ -506,7 +530,6 @@
   background: rgba(255, 185, 205, 0.1);
 }
 
-/* порожній стан */
 
 .home-empty {
   display: flex;
@@ -528,7 +551,6 @@
   flex: 1;
 }
 
-/* ===== Кнопки ===== */
 
 .home-btn {
   min-height: 36px;
@@ -573,7 +595,6 @@
   padding-top: 12px;
 }
 
-/* ===== Найближчі справи ===== */
 
 .home-list-upcoming {
   gap: 7px;
@@ -626,7 +647,6 @@
   white-space: nowrap;
 }
 
-/* ===== Швидкий фокус ===== */
 
 .home-timer-card {
   gap: 0;
@@ -755,42 +775,68 @@
   font-size: 16px;
 }
 
-/* ===== Настрій ===== */
 
 .home-moods {
-  display: flex;
+  display: grid;
   flex: 1;
-  align-items: center;
-  justify-content: space-between;
-  gap: 2px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  align-content: center;
+  justify-items: center;
+  gap: 0;
   padding: 10px 0;
 }
 
-.home-mood {
+.home-page .home-mood {
   display: flex;
-  flex: 1;
   flex-direction: column;
   align-items: center;
   gap: 6px;
+  width: 100%;
   min-width: 0;
-  padding: 7px 0 5px;
+  padding: 0;
   color: #cfc0ef;
-  font-size: 10.5px;
+  font-size: clamp(9px, 0.75vw, 10.5px);
+  font-weight: 400;
   line-height: 13px;
   background: transparent;
-  border: 1px solid transparent;
-  border-radius: 12px;
+  border: 0;
+  border-radius: 0;
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
-.home-mood:hover {
-  background: color-mix(in srgb, var(--mood) 10%, transparent);
+.home-page .home-mood svg {
+  display: block;
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  padding: 5px;
+  background: color-mix(in srgb, var(--mood) 12%, transparent);
+  border-radius: 50%;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
 }
 
-.home-mood.is-selected {
-  background: color-mix(in srgb, var(--mood) 14%, transparent);
-  border-color: var(--mood);
+.home-page .home-mood span {
+  display: block;
+  max-width: none;
+  color: #cfc0ef;
+  font-size: inherit;
+  font-weight: 400;
+  line-height: 13px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.home-page .home-mood:hover svg {
+  background: color-mix(in srgb, var(--mood) 22%, transparent);
+}
+
+.home-page .home-mood.is-selected svg {
+  background: color-mix(in srgb, var(--mood) 26%, transparent);
+  box-shadow: 0 0 0 1.5px var(--mood);
+}
+
+.home-page .home-mood.is-selected span {
+  color: #fff;
 }
 
 .home-mood-save {
@@ -798,7 +844,6 @@
   width: 74%;
 }
 
-/* ===== Мій космос ===== */
 
 .home-space {
   position: relative;
@@ -830,7 +875,6 @@
   border-radius: 10px;
 }
 
-/* ===== Швидкі дії ===== */
 
 .home-quick {
   display: grid;
@@ -868,7 +912,6 @@
   border-color: #8c55ea;
 }
 
-/* ===== Модальні вікна ===== */
 
 .home-modal-backdrop {
   position: fixed;
@@ -984,29 +1027,11 @@
   min-height: 40px;
 }
 
-/* ===== Адаптація ===== */
 
 @media (max-width: 1180px) {
   .home-body {
     grid-template-columns: minmax(0, 1fr);
     gap: 14px;
-  }
-
-  .home-sidebar {
-    min-height: 0;
-    padding: 8px;
-    overflow-x: auto;
-  }
-
-  .home-sidebar nav {
-    flex-direction: row;
-    gap: 4px;
-  }
-
-  .home-nav-item {
-    width: auto;
-    padding: 0 14px;
-    white-space: nowrap;
   }
 
   .home-row-top,
@@ -1017,6 +1042,38 @@
 
   .home-banner-star {
     left: 50%;
+  }
+
+  .home-page .home-mood {
+    font-size: 10.5px;
+  }
+}
+
+@media (max-width: 900px) {
+  .home-sidebar {
+    flex-direction: row;
+    align-items: center;
+    min-height: 0;
+    padding: 8px;
+    overflow-x: auto;
+  }
+
+  .home-sidebar nav {
+    flex-direction: row;
+  }
+
+  .home-nav-item,
+  .home-nav-item.is-active {
+    flex-shrink: 0;
+    width: auto;
+    height: 40px;
+    padding: 0 14px;
+    white-space: nowrap;
+  }
+
+  .home-profile {
+    margin-top: 0;
+    margin-left: auto;
   }
 }
 

@@ -3,13 +3,14 @@ import { useEffect, useState } from 'react';
 import LoginCard from './components/LoginCard';
 import RegisterCard from './components/RegisterCard';
 import HomePage from './pages/HomePage';
+import PlannerPage from './pages/PlannerPage';
 import ProfilePage from './pages/ProfilePage';
 import { getCurrentUser, logoutUser, type UserProfile } from './services/authService';
 import logoIcon from './assets/icons/logo.svg';
 import './App.css';
 
 
-type AuthPage = 'login' | 'register' | 'home' | 'profile';
+type AuthPage = 'login' | 'register' | 'home' | 'planner' | 'profile';
 
 function App() {
   const [page, setPage] = useState<AuthPage>('register');
@@ -79,6 +80,23 @@ function App() {
         onNavigate={(destination) => {
           if (destination === 'profile') {
             setPage('profile');
+          } else if (destination === 'planner') {
+            setPage('planner');
+          }
+        }}
+      />
+    );
+  }
+
+  if (page === 'planner' && user) {
+    return (
+      <PlannerPage
+        userId={user.id}
+        onNavigate={(destination) => {
+          if (destination === 'profile') {
+            setPage('profile');
+          } else if (destination === 'home') {
+            setPage('home');
           }
         }}
       />
@@ -90,6 +108,11 @@ function App() {
       <ProfilePage
         userName={user.displayName}
         onBack={() => setPage('home')}
+        onNavigate={(destination) => {
+          if (destination === 'planner') {
+            setPage('planner');
+          }
+        }}
       />
     );
   }

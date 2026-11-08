@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, FormEvent, ReactNode } from 'react';
 import logoIcon from '../assets/icons/logo.svg';
+import spaceImage from '../assets/images/space.png';
 import {
   createHabit as createApiHabit,
   deleteHabit as deleteApiHabit,
@@ -341,7 +342,7 @@ function readStoredUser(): { name: string; key: string } {
       };
     }
   } catch {
-    // Ignore unavailable or malformed optional local profile data.
+    return { name: '', key: 'guest' };
   }
   return { name: '', key: 'guest' };
 }
@@ -360,7 +361,7 @@ function useStoredState<T>(key: string, initial: T) {
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch {
-      // Keep the page usable when browser storage is unavailable.
+      return;
     }
   }, [key, value]);
 
@@ -552,7 +553,7 @@ function HabitForm({
     };
 
     if (categoryId) {
-        payload.categoryId = categoryId; // або parseInt(categoryId, 10), якщо API вимагає числове ID
+        payload.categoryId = categoryId;
     }
     onSubmit(payload);
   }
@@ -891,10 +892,9 @@ const [focusTaskId, setFocusTaskId] = useStoredState(`stellora:${scope}:focusTas
       </header>
 
       <div className="home-body">
-        {/* ---------- Меню ---------- */}
         <aside className="home-sidebar">
           <nav aria-label="Основна навігація">
-            {NAV.map((item) => (
+            {NAV.filter((item) => item.key !== 'profile').map((item) => (
               <button
                 key={item.key}
                 type="button"
@@ -907,11 +907,19 @@ const [focusTaskId, setFocusTaskId] = useStoredState(`stellora:${scope}:focusTas
               </button>
             ))}
           </nav>
+          <button
+            type="button"
+            className={`home-nav-item home-profile${active === 'profile' ? ' is-active' : ''}`}
+            aria-current={active === 'profile' ? 'page' : undefined}
+            onClick={() => go('profile')}
+          >
+            <Icon name="user" size={20} />
+            <span>Профіль</span>
+          </button>
         </aside>
 
         {}
         <main className="home-main">
-          {/* Привітання */}
           <section className="home-banner">
             <h1>Вітаємо, {displayName}!</h1>
             <img className="home-banner-star" src={logoIcon} alt="" />
@@ -976,6 +984,7 @@ const [focusTaskId, setFocusTaskId] = useStoredState(`stellora:${scope}:focusTas
                         {t.done ? '✓' : ''}
                       </button>
                       <span className="home-item-title">{t.title}</span>
+                      <span className="home-task-category">{t.category}</span>
                       <span className="home-item-meta">{t.time || '—'}</span>
                       <RowMenu onDelete={() => deleteTask(t.id)} />
                     </li>
@@ -1237,9 +1246,9 @@ const [focusTaskId, setFocusTaskId] = useStoredState(`stellora:${scope}:focusTas
             </section>
           </div>
 
-          {/* Мій космос + Швидкі дії */}
           <div className="home-row home-row-bottom">
             <section className="home-space">
+              <img className="home-space-image" src={spaceImage} alt="" />
               <h2>
                 <Icon name="star" size={20} />
                 Мій космос

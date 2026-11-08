@@ -218,6 +218,7 @@ function writeJSON(key: string, value: unknown) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch {
+    return;
   }
 }
 
@@ -234,6 +235,7 @@ function readStoredUser(): { name: string; email: string; key: string; createdAt
       };
     }
   } catch {
+    return { name: '', email: '', key: 'guest', createdAt: '' };
   }
   return { name: '', email: '', key: 'guest', createdAt: '' };
 }
@@ -253,6 +255,7 @@ function syncStoredUser(user: UserProfile) {
       }),
     );
   } catch {
+    return;
   }
 }
 
@@ -447,12 +450,11 @@ export default function ProfilePage({ userName, userEmail, onBack, onNavigate }:
         {}
         <aside className="profile-sidebar">
           <nav aria-label="Основна навігація">
-            {NAV.map((item) => (
+            {NAV.filter((item) => item.key !== 'profile').map((item) => (
               <button
                 key={item.key}
                 type="button"
-                className={`profile-nav-item${item.key === 'profile' ? ' is-active' : ''}`}
-                aria-current={item.key === 'profile' ? 'page' : undefined}
+                className="profile-nav-item"
                 onClick={() => go(item.key)}
               >
                 <Icon name={item.icon} size={20} />
@@ -460,6 +462,15 @@ export default function ProfilePage({ userName, userEmail, onBack, onNavigate }:
               </button>
             ))}
           </nav>
+          <button
+            type="button"
+            className="profile-nav-item profile-nav-profile is-active"
+            aria-current="page"
+            onClick={() => go('profile')}
+          >
+            <Icon name="user" size={20} />
+            <span>Профіль</span>
+          </button>
         </aside>
 
         {}
