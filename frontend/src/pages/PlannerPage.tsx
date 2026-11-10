@@ -26,7 +26,17 @@ interface PlannerProps {
   userId?: string;
 }
 
-type TaskCategory = 'Навчання' | 'Командна робота' | 'Саморозвиток' | 'Інше';
+type TaskCategory =
+  | 'Навчання'
+  | 'Робота'
+  | 'Командна робота'
+  | 'Саморозвиток'
+  | 'Здоров’я'
+  | 'Особисте'
+  | 'Відпочинок'
+  | 'Фінанси'
+  | 'Побут'
+  | 'Інше';
 
 interface Task {
   id: string;
@@ -45,8 +55,14 @@ type EditorState = { mode: 'create' } | { mode: 'edit'; task: Task };
 const LEGACY_STORAGE_KEY = 'stellora_planner_tasks';
 const TASK_CATEGORIES: TaskCategory[] = [
   'Навчання',
+  'Робота',
   'Командна робота',
   'Саморозвиток',
+  'Здоров’я',
+  'Особисте',
+  'Відпочинок',
+  'Фінанси',
+  'Побут',
   'Інше',
 ];
 

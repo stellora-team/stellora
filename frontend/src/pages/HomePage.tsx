@@ -23,7 +23,30 @@ type NavKey =
   | 'diary'
   | 'profile';
 
-type TaskCategory = 'Навчання' | 'Командна робота' | 'Саморозвиток' | 'Інше';
+type TaskCategory =
+  | 'Навчання'
+  | 'Робота'
+  | 'Командна робота'
+  | 'Саморозвиток'
+  | 'Здоров’я'
+  | 'Особисте'
+  | 'Відпочинок'
+  | 'Фінанси'
+  | 'Побут'
+  | 'Інше';
+
+const TASK_CATEGORIES: TaskCategory[] = [
+  'Навчання',
+  'Робота',
+  'Командна робота',
+  'Саморозвиток',
+  'Здоров’я',
+  'Особисте',
+  'Відпочинок',
+  'Фінанси',
+  'Побут',
+  'Інше',
+];
 
 type Task = {
   id: string;
@@ -255,13 +278,30 @@ function MoodFace({ color, mouth }: { color: string; mouth: ReactNode }) {
   );
 }
 
-const CATEGORIES: TaskCategory[] = ['Навчання', 'Командна робота', 'Саморозвиток', 'Інше'];
-
 const CATEGORY_ICON: Record<TaskCategory, IconName> = {
   Навчання: 'clipboard',
+  Робота: 'clipboard',
   'Командна робота': 'people',
   Саморозвиток: 'cap',
+  'Здоров’я': 'drop',
+  Особисте: 'user',
+  Відпочинок: 'star',
+  Фінанси: 'bars',
+  Побут: 'home',
   Інше: 'calendar',
+};
+
+const CATEGORY_COLOR: Record<TaskCategory, string> = {
+  Навчання: '#9b7bff',
+  Робота: '#7c9bff',
+  'Командна робота': '#48cdb3',
+  Саморозвиток: '#d38aff',
+  'Здоров’я': '#55d6a8',
+  Особисте: '#f08cbd',
+  Відпочинок: '#f1b85b',
+  Фінанси: '#76c8e8',
+  Побут: '#e69570',
+  Інше: '#b7a5d9',
 };
 
 const FREQUENCIES = ['Щодня', 'По буднях', '3 рази на тиждень', 'Раз на тиждень'];
@@ -499,7 +539,7 @@ function TaskForm({
       <label>
         <span>Категорія</span>
         <select value={category} onChange={(e) => setCategory(e.target.value as TaskCategory)}>
-          {CATEGORIES.map((c) => (
+          {TASK_CATEGORIES.map((c) => (
             <option key={c} value={c}>
               {c}
             </option>
@@ -715,7 +755,9 @@ export default function HomePage({
     () =>
       tasks
         .filter((t) => !t.done && t.date >= today)
-        .sort((a, b) => `${a.date} ${a.time || '99:99'}`.localeCompare(`${b.date} ${b.time || '99:99'}`)),
+        .sort((a, b) =>
+          `${a.date} ${a.time || '99:99'}`.localeCompare(`${b.date} ${b.time || '99:99'}`),
+        ),
     [tasks, today],
   );
   const visibleUpcoming = showAllUpcoming ? upcoming : upcoming.slice(0, 3);
@@ -970,7 +1012,7 @@ const [focusTaskId, setFocusTaskId] = useStoredState(`stellora:${scope}:focusTas
                   Поки що немає завдань на сьогодні. Додай перше, щоб почати день.
                 </div>
               ) : (
-                <ul className="home-list">
+                <ul className="home-list home-list-tasks">
                   {visibleTasks.map((t) => (
                     <li className="home-item home-task" key={t.id}>
                       <button
@@ -984,7 +1026,12 @@ const [focusTaskId, setFocusTaskId] = useStoredState(`stellora:${scope}:focusTas
                         {t.done ? '✓' : ''}
                       </button>
                       <span className="home-item-title">{t.title}</span>
-                      <span className="home-task-category">{t.category}</span>
+                      <span
+                        className="home-task-category"
+                        style={{ '--category-color': CATEGORY_COLOR[t.category] } as CSSProperties}
+                      >
+                        {t.category}
+                      </span>
                       <span className="home-item-meta">{t.time || '—'}</span>
                       <RowMenu onDelete={() => deleteTask(t.id)} />
                     </li>
@@ -1037,7 +1084,7 @@ const [focusTaskId, setFocusTaskId] = useStoredState(`stellora:${scope}:focusTas
                 </div>
               ) : habits.length === 0 ? (
                 <div className="home-empty">
-                  Ти ще не додав(-ла) жодної звички. Почни з маленької — наприклад, склянки води.
+                  Ти ще не додав(-ла) жодної звички. Почни з маленької - наприклад, склянки води.
                 </div>
               ) : (
                 <ul className="home-list">
@@ -1117,14 +1164,23 @@ const [focusTaskId, setFocusTaskId] = useStoredState(`stellora:${scope}:focusTas
                 <ul className="home-list home-list-upcoming">
                   {visibleUpcoming.map((t) => (
                     <li className="home-item home-upcoming" key={t.id}>
-                      <span className="home-upcoming-icon">
+                      <span
+                        className="home-upcoming-icon"
+                        style={{ '--category-color': CATEGORY_COLOR[t.category] } as CSSProperties}
+                      >
                         <Icon name={CATEGORY_ICON[t.category]} size={18} />
                       </span>
                       <span className="home-upcoming-text">
                         <strong>{t.title}</strong>
                         <small>
                           {formatDayLabel(t.date, now)}
-                          {t.time ? `, ${t.time}` : ''} · {t.category}
+                          {t.time ? `, ${t.time}` : ''} ·{' '}
+                          <span
+                            className="home-upcoming-category"
+                            style={{ '--category-color': CATEGORY_COLOR[t.category] } as CSSProperties}
+                          >
+                            {t.category}
+                          </span>
                         </small>
                       </span>
                       <RowMenu onDelete={() => deleteTask(t.id)} />
