@@ -94,3 +94,22 @@ export async function setHabitCompletedToday(
     { method: completed ? 'PUT' : 'DELETE' },
   );
 }
+
+export interface CalendarActivity {
+  id: string;
+  type: 'Task' | 'Goal' | 'HabitCompletion' | 'FocusSession' | 'MoodEntry' | 'MemoryEntry' | 'Reminder';
+  title: string;
+  timestamp: string;
+  status?: string;
+  categoryId?: string;
+  relatedId?: string;
+}
+
+export interface CalendarResponse {
+  userId: string;
+  selectedPeriod: {
+    startDate: string;
+    endDate: string;
+  };
+  datedActivities: Record<string, CalendarActivity[]>;
+}
