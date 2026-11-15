@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import logoIcon from '../assets/icons/logo.svg';
+import tasksSummaryIcon from '../assets/Vector (1).png';
+import habitsSummaryIcon from '../assets/Vector (2).png';
+import focusSummaryIcon from '../assets/Vector (3).png';
+import goalsSummaryIcon from '../assets/Group 24.png';
 import emptyTasksImage from '../assets/images/image 11.png';
 import emptyHabitsImage from '../assets/images/image 10.png';
 import emptyGoalsImage from '../assets/images/image 8.png';
@@ -414,19 +418,19 @@ function StatisticsContent({
 
       <section className="statistics-summary" aria-label="Зведені показники">
         <article className="statistics-summary-card">
-          <span className="statistics-summary-icon">✓</span>
+          <span className="statistics-summary-icon"><img src={tasksSummaryIcon} alt="" /></span>
           <div><span>Завдання</span><strong>{data.summary.tasks.value}</strong><small>{data.summary.tasks.completion}% виконано</small></div>
         </article>
         <article className="statistics-summary-card">
-          <span className="statistics-summary-icon">●</span>
+          <span className="statistics-summary-icon"><img src={habitsSummaryIcon} alt="" /></span>
           <div><span>Звички</span><strong>{data.summary.habits}</strong><small>активних</small></div>
         </article>
         <article className="statistics-summary-card">
-          <span className="statistics-summary-icon">◎</span>
+          <span className="statistics-summary-icon"><img src={goalsSummaryIcon} alt="" /></span>
           <div><span>Цілі</span><strong>{data.summary.goals}</strong><small>в процесі</small></div>
         </article>
         <article className="statistics-summary-card">
-          <span className="statistics-summary-icon">◷</span>
+          <span className="statistics-summary-icon"><img src={focusSummaryIcon} alt="" /></span>
           <div><span>Фокус сесії</span><strong>{data.summary.focusHours} год</strong><small>{period === '7d' ? 'цього тижня' : 'за період'}</small></div>
         </article>
       </section>
@@ -529,7 +533,20 @@ function EmptyStatistics({ onNavigate }: { onNavigate: (destination: NavKey) => 
           ['Фокус сесії', '0 год', 'за період'],
         ].map(([label, value, hint]) => (
           <article className="statistics-summary-card" key={label}>
-            <span className="statistics-summary-icon">—</span>
+            <span className="statistics-summary-icon">
+              <img
+                src={
+                  label === 'Завдання'
+                    ? tasksSummaryIcon
+                    : label === 'Звички'
+                      ? habitsSummaryIcon
+                      : label === 'Цілі'
+                        ? goalsSummaryIcon
+                        : focusSummaryIcon
+                }
+                alt=""
+              />
+            </span>
             <div><span>{label}</span><strong>{value}</strong><small>{hint}</small></div>
           </article>
         ))}
@@ -539,7 +556,6 @@ function EmptyStatistics({ onNavigate }: { onNavigate: (destination: NavKey) => 
         {EMPTY_CARDS.map((card) => (
           <article className="statistics-empty-card" key={card.title}>
             <img className="statistics-empty-image" src={card.image} alt="" />
-            <span className="statistics-empty-icon">{card.icon}</span>
             <h2>{card.title}</h2>
             <p>{card.text}</p>
             <button type="button" onClick={() => onNavigate(card.destination)}>{card.action}</button>
