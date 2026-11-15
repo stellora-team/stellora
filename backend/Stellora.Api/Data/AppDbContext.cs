@@ -17,6 +17,7 @@ public sealed class AppDbContext : DbContext
     public DbSet<HabitCompletion> HabitCompletions
         => Set<HabitCompletion>();
     public DbSet<MoodEntry> MoodEntries => Set<MoodEntry>();
+    public DbSet<Note> Notes => Set<Note>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -185,6 +186,7 @@ public sealed class AppDbContext : DbContext
             .OnDelete(DeleteBehavior.Restrict);
 
         habit.HasIndex(x => new { x.UserId, x.CreatedAtUtc });
+        
         var completion = modelBuilder.Entity<HabitCompletion>();
 
         completion.ToTable("habit_completions");
@@ -247,5 +249,36 @@ public sealed class AppDbContext : DbContext
             })
             .IsUnique()
             .HasDatabaseName("ux_mood_entries_user_date");
+        var note = modelBuilder.Entity<Note>();
+
+        note.ToTable("notes");
+
+        note.HasKey(x => x.Id);
+
+        note.Property(x => x.Title)
+            .HasMaxLength(100)
+            .IsRequired();
+
+        note.Property(x => x.Content)
+            .HasMaxLength(10_000)
+            .IsRequired();
+
+        note.Property(x => x.CreatedAtUtc)
+            .IsRequired();
+
+        note.Property(x => x.UpdatedAtUtc)
+            .IsRequired(false);
+
+        note.HasOne<User>()
+            .WithMany()
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        note.HasIndex(x => new
+        {
+            x.UserId,
+            x.CreatedAtUtc,
+            x.Id
+        });
     }
 }

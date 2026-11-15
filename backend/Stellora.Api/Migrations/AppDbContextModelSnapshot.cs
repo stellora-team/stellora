@@ -201,6 +201,38 @@ namespace Stellora.Api.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Stellora.Api.Models.Note", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(10000)
+                        .HasColumnType("character varying(10000)");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "CreatedAtUtc", "Id");
+
+                    b.ToTable("notes", (string)null);
+                });
+
             modelBuilder.Entity("Stellora.Api.Models.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -295,6 +327,15 @@ namespace Stellora.Api.Migrations
                 });
 
             modelBuilder.Entity("Stellora.Api.Models.MoodEntry", b =>
+                {
+                    b.HasOne("Stellora.Api.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Stellora.Api.Models.Note", b =>
                 {
                     b.HasOne("Stellora.Api.Models.User", null)
                         .WithMany()
