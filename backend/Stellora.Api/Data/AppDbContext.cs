@@ -16,6 +16,7 @@ public sealed class AppDbContext : DbContext
     public DbSet<Habit> Habits => Set<Habit>();
     public DbSet<HabitCompletion> HabitCompletions
         => Set<HabitCompletion>();
+    public DbSet<MoodEntry> MoodEntries => Set<MoodEntry>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -209,5 +210,42 @@ public sealed class AppDbContext : DbContext
             })
             .IsUnique()
             .HasDatabaseName("ux_habit_completions_habit_date");
+        
+        var mood = modelBuilder.Entity<MoodEntry>();
+
+        mood.ToTable("mood_entries", table =>
+        {
+            table.HasCheckConstraint(
+                "ck_mood_entries_score",
+                "\"Score\" BETWEEN 1 AND 5");
+        });
+
+        mood.HasKey(x => x.Id);
+
+        mood.Property(x => x.RecordedOn)
+            .HasColumnType("date")
+            .IsRequired();
+
+        mood.Property(x => x.Score)
+            .IsRequired();
+
+        mood.Property(x => x.CreatedAtUtc)
+            .IsRequired();
+
+        mood.Property(x => x.UpdatedAtUtc)
+            .IsRequired(false);
+
+        mood.HasOne<User>()
+            .WithMany()
+            .HasForeignKey(x => x.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        mood.HasIndex(x => new
+            {
+                x.UserId,
+                x.RecordedOn
+            })
+            .IsUnique()
+            .HasDatabaseName("ux_mood_entries_user_date");
     }
 }

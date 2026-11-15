@@ -168,6 +168,39 @@ namespace Stellora.Api.Migrations
                     b.ToTable("habit_completions", (string)null);
                 });
 
+            modelBuilder.Entity("Stellora.Api.Models.MoodEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateOnly>("RecordedOn")
+                        .HasColumnType("date");
+
+                    b.Property<int>("Score")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "RecordedOn")
+                        .IsUnique()
+                        .HasDatabaseName("ux_mood_entries_user_date");
+
+                    b.ToTable("mood_entries", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_mood_entries_score", "\"Score\" BETWEEN 1 AND 5");
+                        });
+                });
+
             modelBuilder.Entity("Stellora.Api.Models.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -257,6 +290,15 @@ namespace Stellora.Api.Migrations
                     b.HasOne("Stellora.Api.Models.Habit", null)
                         .WithMany()
                         .HasForeignKey("HabitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Stellora.Api.Models.MoodEntry", b =>
+                {
+                    b.HasOne("Stellora.Api.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
