@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import LoginCard from './components/LoginCard';
 import RegisterCard from './components/RegisterCard';
@@ -8,9 +7,10 @@ import HabitsPage from './pages/HabitsPage';
 import { getCurrentUser, logoutUser, type UserProfile } from './services/authService';
 import logoIcon from './assets/icons/logo.svg';
 import './App.css';
+import StatisticsPage from './pages/StatisticsPage';
 
-
-type AuthPage = 'login' | 'register' | 'home' | 'profile' | 'habits';
+type AuthPage = 'login' | 'register' | 'home' | 'profile' | 'habits' | 'statistics';
+type AppNavigationDestination = 'home' | 'profile' | 'habits' | 'statistics';
 
 function App() {
   const [page, setPage] = useState<AuthPage>('register');
@@ -63,6 +63,10 @@ function App() {
     }
   }
 
+  function handlePageNavigate(destination: AppNavigationDestination) {
+    setPage(destination);
+  }
+
   if (checkingSession) {
     return (
       <main className="app-loading" role="status">
@@ -83,6 +87,9 @@ function App() {
           } else if (destination === 'habits') {
             setPage('habits');
           }
+          if (destination === 'statistics') {
+            setPage('statistics');
+          }
         }}
       />
     );
@@ -92,7 +99,19 @@ function App() {
     return (
       <ProfilePage
         userName={user.displayName}
+        onBack={() => handlePageNavigate('home')}
+        onNavigate={handlePageNavigate}
+      />
+    );
+  }
+
+  if (page === 'statistics' && user) {
+    return (
+      <StatisticsPage
+        userName={user.displayName}
+        userId={user.id}
         onBack={() => setPage('home')}
+        onNavigate={(destination) => setPage(destination)}
       />
     );
   }
@@ -157,7 +176,8 @@ function App() {
             космос розвитку
           </h2>
           <p className="intro-text">
-            Плануй. Розвивай звички. Досягай цілей. Створи свою унікальну галактику.
+            Плануй. Розвивай звички. Досягай цілей. Створи свою унікальну
+            галактику.
           </p>
         </div>
 

@@ -22,7 +22,7 @@ type NavKey =
   | 'habits'
   | 'focus'
   | 'space'
-  | 'statistic'
+  | 'statistics'
   | 'diary'
   | 'profile';
 
@@ -209,7 +209,7 @@ const NAV: { key: NavKey; label: string; icon: IconName }[] = [
   { key: 'habits', label: 'Звички', icon: 'checkCircle' },
   { key: 'focus', label: 'Фокус', icon: 'focusFill' },
   { key: 'space', label: 'Космос', icon: 'star' },
-  { key: 'statistic', label: 'Статистика', icon: 'bars' },
+  { key: 'statistics', label: 'Статистика', icon: 'bars' },
   { key: 'diary', label: 'Щоденник', icon: 'calendarCheck' },
   { key: 'profile', label: 'Профіль', icon: 'user' },
 ];
