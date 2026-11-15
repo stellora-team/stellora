@@ -1,12 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import logoIcon from '../assets/icons/logo.svg';
+import emptyTasksImage from '../assets/images/image 11.png';
+import emptyHabitsImage from '../assets/images/image 10.png';
+import emptyGoalsImage from '../assets/images/image 8.png';
+import emptyFocusImage from '../assets/images/image 9.png';
+import statisticsLoadErrorImage from '../assets/images/image 6.png';
 import {
   getStatistics,
   isStatisticsEmpty,
   STATISTICS_PERIODS,
+  normalizeStatisticsCategoryId,
+  normalizeStatisticsPeriod,
   type ChartPoint,
   type StatisticsData,
+  type StatisticsCategoryId,
   type StatisticsPeriod,
 } from '../services/statisticsService';
 import './StatisticsPage.css';
@@ -27,6 +35,25 @@ type LoadState =
   | { status: 'loading' }
   | { status: 'error' }
   | { status: 'ready'; data: StatisticsData };
+
+type StatisticsCategory = {
+  id: number | null;
+  label: string;
+  color: string;
+};
+
+const STATISTICS_CATEGORIES: StatisticsCategory[] = [
+  { id: null, label: 'Усі категорії', color: '#b8a5e8' },
+  { id: 1, label: "Здоров'я", color: '#ff6b9d' },
+  { id: 2, label: 'Навчання', color: '#5dc9ff' },
+  { id: 3, label: 'Робота', color: '#a77bff' },
+  { id: 6, label: 'Саморозвиток', color: '#c56cff' },
+  { id: 5, label: 'Стосунки', color: '#ff9e67' },
+  { id: 4, label: 'Фінанси', color: '#f5ce4e' },
+  { id: 8, label: 'Побут', color: '#65d6b3' },
+  { id: 9, label: 'Хобі', color: '#65a8ff' },
+  { id: 10, label: 'Гармонія', color: '#d99aff' },
+];
 
 const DARK = '#12103a';
 
@@ -152,26 +179,94 @@ function BarChart({ points, maxValue }: { points: ChartPoint[]; maxValue: number
 
 export default function StatisticsPage({ userName, userId, onBack, onNavigate }: StatisticsPageProps) {
   const [period, setPeriod] = useState<StatisticsPeriod>('7d');
+  const [categoryId, setCategoryId] = useState<StatisticsCategoryId>(null);
+  const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
   const [loadState, setLoadState] = useState<LoadState>({ status: 'loading' });
+  const [filterLoading, setFilterLoading] = useState(false);
+  const [filterToast, setFilterToast] = useState(false);
+  const [reloadNonce, setReloadNonce] = useState(0);
+  const categoryMenuRef = useRef<HTMLDivElement>(null);
+  const hasDataRef = useRef(false);
+  const skipFilterRequestRef = useRef(false);
+  const lastSuccessfulFilterRef = useRef<{
+    period: StatisticsPeriod;
+    categoryId: StatisticsCategoryId;
+  }>({ period: '7d', categoryId: null });
 
-  // Завантаження при відкритті сторінки і при кожній зміні періоду.
+  const selectedCategory =
+    STATISTICS_CATEGORIES.find((category) => category.id === categoryId) ??
+    STATISTICS_CATEGORIES[0];
+
   useEffect(() => {
-    let cancelled = false;
-    setLoadState({ status: 'loading' });
+    if (!categoryMenuOpen) return;
+    const closeOnOutsideClick = (event: MouseEvent) => {
+      if (categoryMenuRef.current && !categoryMenuRef.current.contains(event.target as Node)) {
+        setCategoryMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', closeOnOutsideClick);
+    return () => document.removeEventListener('mousedown', closeOnOutsideClick);
+  }, [categoryMenuOpen]);
 
-    getStatistics(userId, period)
+  useEffect(() => {
+    if (!filterToast) return;
+    const timeoutId = window.setTimeout(() => setFilterToast(false), 5000);
+    return () => window.clearTimeout(timeoutId);
+  }, [filterToast]);
+
+  useEffect(() => {
+    if (skipFilterRequestRef.current) {
+      skipFilterRequestRef.current = false;
+      return;
+    }
+
+    let cancelled = false;
+    const isInitialLoad = !hasDataRef.current;
+    if (isInitialLoad) {
+      setLoadState({ status: 'loading' });
+    } else {
+      setFilterLoading(true);
+    }
+
+    getStatistics(
+      userId,
+      normalizeStatisticsPeriod(period),
+      normalizeStatisticsCategoryId(categoryId),
+    )
       .then((data) => {
-        if (!cancelled) setLoadState({ status: 'ready', data });
+        if (cancelled) return;
+        hasDataRef.current = true;
+        lastSuccessfulFilterRef.current = { period, categoryId };
+        setLoadState({ status: 'ready', data });
       })
       .catch(() => {
-        if (!cancelled) setLoadState({ status: 'error' });
+        if (cancelled) return;
+        if (isInitialLoad) {
+          setLoadState({ status: 'error' });
+        } else {
+          setFilterToast(true);
+          skipFilterRequestRef.current = true;
+          setPeriod(lastSuccessfulFilterRef.current.period);
+          setCategoryId(lastSuccessfulFilterRef.current.categoryId);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setFilterLoading(false);
       });
 
     // Відповідь на застарілий період ігноруємо, якщо користувач встиг переключити вкладку.
     return () => {
       cancelled = true;
     };
-  }, [period, userId]);
+  }, [categoryId, period, reloadNonce, userId]);
+
+  function retryInitialLoad() {
+    hasDataRef.current = false;
+    setLoadState({ status: 'loading' });
+    setReloadNonce((nonce) => nonce + 1);
+    setPeriod(normalizeStatisticsPeriod(period));
+    setCategoryId(normalizeStatisticsCategoryId(categoryId));
+  }
 
   function navigate(destination: NavKey) {
     if (destination === 'home') {
@@ -212,10 +307,45 @@ export default function StatisticsPage({ userName, userId, onBack, onNavigate }:
           </nav>
         </aside>
 
-        <main className="statistics-main" aria-busy={isLoading}>
+        <main className="statistics-main" aria-busy={isLoading || filterLoading}>
           <section className="statistics-banner">
             <h1>Статистика</h1>
-            <div className="statistics-periods" role="group" aria-label="Період статистики">
+            <div className="statistics-banner-controls">
+              <div className="statistics-category-filter" ref={categoryMenuRef}>
+                <button
+                  type="button"
+                  className="statistics-category-trigger"
+                  aria-expanded={categoryMenuOpen}
+                  aria-haspopup="listbox"
+                  onClick={() => setCategoryMenuOpen((open) => !open)}
+                >
+                  <i style={{ backgroundColor: selectedCategory.color }} />
+                  <span>{selectedCategory.label}</span>
+                  <b>⌄</b>
+                </button>
+                {categoryMenuOpen && (
+                  <div className="statistics-category-menu" role="listbox" aria-label="Категорія статистики">
+                    {STATISTICS_CATEGORIES.map((category) => (
+                      <button
+                        type="button"
+                        role="option"
+                        aria-selected={category.id === categoryId}
+                        className={category.id === categoryId ? 'is-selected' : ''}
+                        key={category.label}
+                        onClick={() => {
+                          setCategoryId(category.id);
+                          setCategoryMenuOpen(false);
+                        }}
+                      >
+                        <i style={{ backgroundColor: category.color }} />
+                        <span>{category.label}</span>
+                        {category.id === categoryId && <b>✓</b>}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="statistics-periods" role="group" aria-label="Період статистики">
               {STATISTICS_PERIODS.map((option) => (
                 <button
                   type="button"
@@ -227,16 +357,13 @@ export default function StatisticsPage({ userName, userId, onBack, onNavigate }:
                   {option.label}
                 </button>
               ))}
+              </div>
             </div>
           </section>
 
           {loadState.status === 'loading' && <LoadingStatistics />}
 
-          {loadState.status === 'error' && (
-            <p className="statistics-error" role="alert">
-              Не вдалося завантажити статистику. Перевірте з’єднання та спробуйте обрати період ще раз.
-            </p>
-          )}
+          {loadState.status === 'error' && <StatisticsLoadError onRetry={retryInitialLoad} />}
 
           {loadState.status === 'ready' &&
             (isStatisticsEmpty(loadState.data) ? (
@@ -244,9 +371,27 @@ export default function StatisticsPage({ userName, userId, onBack, onNavigate }:
             ) : (
               <StatisticsContent data={loadState.data} period={period} userName={userName} />
             ))}
+          {filterToast && (
+            <div className="statistics-filter-toast" role="alert">
+              <span className="statistics-toast-icon">!</span>
+              <div><strong>Не вдалося застосувати фільтр</strong><small>Дані не оновлено. Спробуйте ще раз</small></div>
+              <button type="button" aria-label="Закрити повідомлення" onClick={() => setFilterToast(false)}>×</button>
+            </div>
+          )}
         </main>
       </div>
     </div>
+  );
+}
+
+function StatisticsLoadError({ onRetry }: { onRetry: () => void }) {
+  return (
+    <section className="statistics-load-error" role="alert">
+      <img className="statistics-load-error-image" src={statisticsLoadErrorImage} alt="" />
+      <h2>Не вдалося завантажити статистику</h2>
+      <p>Сталася помилка під час отримання даних. Спробуйте завантажити статистику ще раз</p>
+      <button type="button" onClick={onRetry}>Спробувати ще раз</button>
+    </section>
   );
 }
 
@@ -360,16 +505,17 @@ function LoadingStatistics() {
 }
 
 const EMPTY_CARDS: {
+  image: string;
   icon: string;
   title: string;
   text: string;
   action: string;
   destination: NavKey;
 }[] = [
-  { icon: '✓', title: 'Ще немає завдань', text: 'Створіть перше завдання, щоб побачити свій прогрес.', action: 'Створити завдання', destination: 'planner' },
-  { icon: '●', title: 'Ще немає звичок', text: 'Додайте звичку та відмічайте виконання. Тут буде ваша регулярність.', action: 'Створити звичку', destination: 'habits' },
-  { icon: '◎', title: 'Ваші цілі ще попереду', text: 'Додайте першу ціль, щоб стежити за її досягненням.', action: 'Створити ціль', destination: 'home' },
-  { icon: '◷', title: 'Ще немає сесій фокусу', text: 'Почніть першу сесію. Тут з’явиться час зосередженої роботи.', action: 'Почати сесію', destination: 'focus' },
+  { image: emptyTasksImage, icon: '✓', title: 'Ще немає завдань', text: 'Створіть перше завдання, щоб побачити свій прогрес.', action: 'Створити завдання', destination: 'home' },
+  { image: emptyHabitsImage, icon: '●', title: 'Ще немає звичок', text: 'Додайте звичку та відмічайте виконання. Тут буде ваша регулярність.', action: 'Створити звичку', destination: 'home' },
+  { image: emptyGoalsImage, icon: '◎', title: 'Ваші цілі ще попереду', text: 'Додайте першу ціль, щоб стежити за її досягненням.', action: 'Створити ціль', destination: 'home' },
+  { image: emptyFocusImage, icon: '◷', title: 'Ще немає сесій фокусу', text: 'Почніть першу сесію. Тут з’явиться час зосередженої роботи.', action: 'Почати сесію', destination: 'home' },
 ];
 
 function EmptyStatistics({ onNavigate }: { onNavigate: (destination: NavKey) => void }) {
@@ -392,6 +538,7 @@ function EmptyStatistics({ onNavigate }: { onNavigate: (destination: NavKey) => 
       <section className="statistics-empty-grid" aria-label="Почніть користуватися Stellora">
         {EMPTY_CARDS.map((card) => (
           <article className="statistics-empty-card" key={card.title}>
+            <img className="statistics-empty-image" src={card.image} alt="" />
             <span className="statistics-empty-icon">{card.icon}</span>
             <h2>{card.title}</h2>
             <p>{card.text}</p>
