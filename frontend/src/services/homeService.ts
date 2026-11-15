@@ -84,13 +84,3 @@ export async function deleteHabit(id: string): Promise<void> {
     method: 'DELETE',
   });
 }
-
-export async function setHabitCompletedToday(
-  id: string,
-  completed: boolean,
-): Promise<void> {
-  await authenticatedRequest<void>(
-    `/api/habits/${encodeURIComponent(id)}/completions/today`,
-    { method: completed ? 'PUT' : 'DELETE' },
-  );
-}

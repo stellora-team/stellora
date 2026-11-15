@@ -4,12 +4,13 @@ import LoginCard from './components/LoginCard';
 import RegisterCard from './components/RegisterCard';
 import HomePage from './pages/HomePage';
 import ProfilePage from './pages/ProfilePage';
+import HabitsPage from './pages/HabitsPage';
 import { getCurrentUser, logoutUser, type UserProfile } from './services/authService';
 import logoIcon from './assets/icons/logo.svg';
 import './App.css';
 
 
-type AuthPage = 'login' | 'register' | 'home' | 'profile';
+type AuthPage = 'login' | 'register' | 'home' | 'profile' | 'habits';
 
 function App() {
   const [page, setPage] = useState<AuthPage>('register');
@@ -79,6 +80,8 @@ function App() {
         onNavigate={(destination) => {
           if (destination === 'profile') {
             setPage('profile');
+          } else if (destination === 'habits') {
+            setPage('habits');
           }
         }}
       />
@@ -90,6 +93,20 @@ function App() {
       <ProfilePage
         userName={user.displayName}
         onBack={() => setPage('home')}
+      />
+    );
+  }
+
+  if (page === 'habits' && user) {
+    return (
+      <HabitsPage
+        userName={user.displayName}
+        userId={user.id}
+        onBack={() => setPage('home')}
+        onNavigate={(destination) => {
+          if (destination === 'profile') setPage('profile');
+          if (destination === 'main') setPage('home');
+        }}
       />
     );
   }
