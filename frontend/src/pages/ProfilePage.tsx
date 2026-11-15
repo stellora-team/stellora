@@ -19,11 +19,13 @@ type NavKey =
   | 'diary'
   | 'profile';
 
+type ProfileNavigationDestination = 'home' | 'profile' | 'statistics';
+
 type ProfilePageProps = {
   userName?: string;
   userEmail?: string;
   onBack?: () => void;
-  onNavigate?: (page: NavKey) => void;
+  onNavigate?: (destination: ProfileNavigationDestination) => void;
 };
 
 type Profile = {
@@ -426,12 +428,18 @@ export default function ProfilePage({ userName, userEmail, onBack, onNavigate }:
   }, [dashboardHabits, scope]);
 
   function go(key: NavKey) {
-    if (key === 'profile') return;
     if (key === 'main') {
-      onBack?.();
+      if (onNavigate) {
+        onNavigate('home');
+      } else {
+        onBack?.();
+      }
       return;
     }
-    onNavigate?.(key);
+    if (key === 'profile') return;
+    if (key === 'statistic') {
+      onNavigate?.('statistics');
+    }
   }
 
   return (
