@@ -1,6 +1,8 @@
 import { authenticatedRequest, ApiError } from './authService';
 
 export type StatisticsPeriod = '7d' | '30d' | 'all';
+export type StatisticsCategoryId = number | null;
+const VALID_STATISTICS_CATEGORY_IDS = new Set([1, 2, 3, 4, 5, 6, 8, 9, 10]);
 
 export const STATISTICS_PERIODS: { key: StatisticsPeriod; label: string }[] = [
   { key: '7d', label: '7 днів' },
@@ -27,16 +29,24 @@ export type StatisticsData = {
 type StoredTask = {
   date: string;
   done: boolean;
+  categoryId?: number | string | null;
+  category?: string;
 };
 
 type StoredFocusSession = {
   date: string;
   minutes: number;
+  categoryId?: number | string | null;
 };
 
 type ApiHabit = {
   createdAtUtc: string;
   scheduledDays: number[];
+  categoryId: number | string | null;
+};
+
+type HabitStatisticsResponse = {
+  days: { date: string; completedCount: number }[];
 };
 
 const WEEK_LABELS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
@@ -65,6 +75,40 @@ function startOfDay(date: Date): Date {
 function getPeriodStart(period: StatisticsPeriod, now: Date): Date | null {
   if (period === 'all') return null;
   return startOfDay(addDays(now, period === '7d' ? -6 : -29));
+}
+
+function toLocalDateString(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+export function normalizeStatisticsPeriod(value: string): StatisticsPeriod {
+  return value === '30d' || value === 'all' ? value : '7d';
+}
+
+export function normalizeStatisticsCategoryId(value: number | null): StatisticsCategoryId {
+  return value === null ||
+    (Number.isInteger(value) && VALID_STATISTICS_CATEGORY_IDS.has(value))
+    ? value
+    : null;
+}
+
+function matchesCategory(
+  categoryId: number | string | null | undefined,
+  categoryLabel: string | undefined,
+  selectedCategoryId: StatisticsCategoryId,
+): boolean {
+  if (selectedCategoryId === null) return true;
+  if (String(categoryId) === String(selectedCategoryId)) return true;
+
+  const labelsById: Record<number, string[]> = {
+    1: ["Здоров'я", 'Здоров’я'],
+    2: ['Навчання'],
+    3: ['Робота'],
+    4: ['Фінанси'],
+    5: ['Стосунки'],
+    6: ['Саморозвиток'],
+  };
+  return Boolean(categoryLabel && labelsById[selectedCategoryId]?.includes(categoryLabel));
 }
 
 function isInPeriod(date: string, periodStart: Date | null, now: Date): boolean {
@@ -134,13 +178,40 @@ async function loadHabits(): Promise<ApiHabit[]> {
   }
 }
 
+async function loadHabitStatistics(
+  period: StatisticsPeriod,
+  categoryId: StatisticsCategoryId,
+  now: Date,
+): Promise<HabitStatisticsResponse | null> {
+  const from = getPeriodStart(period, now) ?? startOfDay(addDays(now, -365));
+  const query = new URLSearchParams({
+    from: toLocalDateString(from),
+    to: toLocalDateString(now),
+  });
+  if (categoryId !== null) query.set('categoryId', String(categoryId));
+
+  try {
+    return await authenticatedRequest<HabitStatisticsResponse>(
+      `/api/statistics/habits?${query.toString()}`,
+    );
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) return null;
+    throw error;
+  }
+}
+
 function calculateTaskStats(
   tasks: StoredTask[],
   period: StatisticsPeriod,
   now: Date,
+  categoryId: StatisticsCategoryId,
 ) {
   const periodStart = getPeriodStart(period, now);
-  const filtered = tasks.filter((task) => isInPeriod(task.date, periodStart, now));
+  const filtered = tasks.filter(
+    (task) =>
+      isInPeriod(task.date, periodStart, now) &&
+      matchesCategory(task.categoryId, task.category, categoryId),
+  );
   const completed = filtered.filter((task) => task.done).length;
   const notStarted = filtered.filter(
     (task) => !task.done && new Date(`${task.date}T23:59:59`) > now,
@@ -158,6 +229,7 @@ function calculateHabitStats(
   habits: ApiHabit[],
   period: StatisticsPeriod,
   now: Date,
+  categoryId: StatisticsCategoryId,
 ): ChartPoint[] {
   const values = getWeekLabels(period).map(() => 0);
   const periodStart = getPeriodStart(period, now) ?? startOfDay(addDays(now, -179));
@@ -166,6 +238,7 @@ function calculateHabitStats(
   while (cursor <= now) {
     const weekday = cursor.getDay() === 0 ? 7 : cursor.getDay();
     for (const habit of habits) {
+      if (!matchesCategory(habit.categoryId, undefined, categoryId)) continue;
       const createdAt = new Date(habit.createdAtUtc);
       if (!Number.isNaN(createdAt.getTime()) && startOfDay(createdAt) > cursor) {
         continue;
@@ -211,18 +284,30 @@ export function isStatisticsEmpty(data: StatisticsData): boolean {
 export async function getStatistics(
   userId: string,
   period: StatisticsPeriod,
+  categoryId: StatisticsCategoryId = null,
 ): Promise<StatisticsData> {
+  const validPeriod = normalizeStatisticsPeriod(period);
+  const validCategoryId = normalizeStatisticsCategoryId(categoryId);
   const now = new Date();
   const tasks = readLocalStorage<StoredTask[]>(`stellora:${userId}:tasks`, []);
   const focusSessions = readLocalStorage<StoredFocusSession[]>(
     `stellora:${userId}:focus`,
     [],
   );
-  const habits = await loadHabits();
-  const taskStats = calculateTaskStats(tasks, period, now);
-  const periodStart = getPeriodStart(period, now);
+  const [habits, habitStatistics] = await Promise.all([
+    loadHabits(),
+    loadHabitStatistics(validPeriod, validCategoryId, now),
+  ]);
+  const filteredHabits = habits.filter(
+    (habit) =>
+      validCategoryId === null ||
+      matchesCategory(habit.categoryId, undefined, validCategoryId),
+  );
+  const taskStats = calculateTaskStats(tasks, validPeriod, now, validCategoryId);
+  const periodStart = getPeriodStart(validPeriod, now);
   const filteredFocus = focusSessions.filter((session) =>
-    isInPeriod(session.date, periodStart, now),
+    isInPeriod(session.date, periodStart, now) &&
+    matchesCategory(session.categoryId, undefined, validCategoryId),
   );
   const focusMinutes = filteredFocus.reduce(
     (total, session) => total + Math.max(0, session.minutes || 0),
@@ -232,17 +317,26 @@ export async function getStatistics(
   return {
     summary: {
       tasks: { value: taskStats.total, completion: taskStats.completion },
-      habits: habits.length,
+      habits: filteredHabits.length,
       goals: 0,
       focusHours: Math.round((focusMinutes / 60) * 10) / 10,
       focusSessions: filteredFocus.length,
     },
     taskBreakdown: taskStats.breakdown,
-    habits: calculateHabitStats(habits, period, now),
+    habits: habitStatistics
+      ? buildChart(
+          habitStatistics.days.map((day) => ({
+            date: day.date,
+            value: day.completedCount,
+          })),
+          validPeriod,
+          now,
+        )
+      : calculateHabitStats(filteredHabits, validPeriod, now, validCategoryId),
     goals: [],
     focus: buildChart(
       filteredFocus.map((session) => ({ date: session.date, value: session.minutes })),
-      period,
+      validPeriod,
       now,
     ),
   };
