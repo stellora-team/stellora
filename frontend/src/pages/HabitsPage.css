@@ -42,7 +42,8 @@
 
 .habits-greeting { min-width: 120px; color: #bcaee0; text-align: right; }
 .habits-content { max-width: 1220px; margin: 0 auto; padding: 42px 28px 60px; }
-.habits-heading { display: flex; align-items: end; justify-content: space-between; margin-bottom: 24px; }
+.habits-heading { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 24px; }
+.habits-heading-actions { display: flex; align-items: center; gap: 12px; }
 .habits-eyebrow { color: #bd8cff; font-size: 11px; letter-spacing: .16em; }
 .habits-heading h1 { margin-top: 6px; color: #fff; font-size: 34px; }
 .habits-back.secondary { padding: 10px 16px; border: 1px solid #6546a7; border-radius: 8px; }
@@ -51,7 +52,10 @@
 .habits-empty, .habits-muted { padding: 22px; color: #b5a8d9; text-align: center; background: rgba(18,18,52,.55); border: 1px dashed #3b2f75; border-radius: 10px; }
 .habits-layout { display: grid; grid-template-columns: minmax(280px, 360px) minmax(0, 1fr); gap: 18px; }
 .habits-list-card, .habit-history-card { padding: 22px; background: linear-gradient(135deg,#10102f,#0a0b25); border: 1px solid #3b2865; border-radius: 16px; }
-.habits-list-card h2, .habit-history-card h2 { margin-bottom: 18px; color: #fff; font-size: 20px; }
+.habits-list-heading { margin-bottom: 18px; }
+.habits-list-card h2, .habit-history-card h2 { margin-bottom: 0; color: #fff; font-size: 20px; }
+.habit-add-button { padding: 10px 16px; color: #f3eaff; font-size: 12px; background: linear-gradient(135deg,#6529f7,#9d3be8); border: 1px solid #ad6bff; border-radius: 8px; cursor: pointer; white-space: nowrap; }
+.habit-add-button:hover { background: linear-gradient(135deg,#773cff,#b347f0); }
 .habits-list-card ul { display: flex; flex-direction: column; gap: 8px; padding: 0; list-style: none; }
 .habits-list-card li { display: flex; align-items: center; gap: 12px; padding: 12px; background: #121234; border: 1px solid #282251; border-radius: 9px; }
 .habits-list-card li.is-selected { border-color: #9c62ef; box-shadow: 0 0 0 1px rgba(156,98,239,.25); }
@@ -61,6 +65,8 @@
 .habit-check { width: 25px; height: 25px; color: white; font-weight: 700; background: #19183a; border: 2px solid #a366fd; border-radius: 6px; cursor: pointer; }
 .habit-check.is-done { background: linear-gradient(101deg,#6529f7,#bc37e8); }
 .habit-check:disabled { opacity: .55; cursor: wait; }
+.habit-menu-button { display: grid; width: 25px; height: 25px; place-items: center; padding: 0; color: #bdaee2; font-size: 21px; line-height: 1; background: transparent; border: 0; border-radius: 6px; cursor: pointer; }
+.habit-menu-button:hover, .habit-menu-button:focus-visible { color: #f0c4ff; background: rgba(156,98,239,.2); outline: none; }
 .habit-history-heading { display: flex; justify-content: space-between; gap: 18px; margin-bottom: 24px; }
 .habit-history-heading h2 { margin-top: 6px; margin-bottom: 0; }
 .habit-streak { display: flex; flex-direction: column; align-items: end; color: #c9b9ee; }
@@ -81,6 +87,8 @@
   .habits-greeting { display: none; }
   .habits-content { padding: 28px 14px 80px; }
   .habits-heading { align-items: start; }
+  .habits-heading-actions { flex-direction: column; align-items: end; gap: 8px; }
+  .habit-add-button { padding: 8px 11px; }
   .habits-heading h1 { font-size: 28px; }
   .habits-back.secondary { display: none; }
   .habits-layout { grid-template-columns: 1fr; }

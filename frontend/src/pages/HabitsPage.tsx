@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type MouseEvent } from 'react';
 import logoIcon from '../assets/icons/logo.svg';
 import {
   loadHomeData,
@@ -27,6 +27,8 @@ type HabitsPageProps = {
   userId?: string;
   onBack?: () => void;
   onNavigate?: (page: NavKey) => void;
+  onAddHabit?: () => void;
+  onEditHabit?: (habit: ApiHabit) => void;
 };
 
 function toISO(date: Date): string {
@@ -57,6 +59,8 @@ export default function HabitsPage({
   userName,
   onBack,
   onNavigate,
+  onAddHabit,
+  onEditHabit,
 }: HabitsPageProps) {
   const [habits, setHabits] = useState<ApiHabit[]>([]);
   const [todayCompletedIds, setTodayCompletedIds] = useState<Set<string>>(new Set());
@@ -159,6 +163,14 @@ export default function HabitsPage({
     }
   }
 
+  function handleHabitMenuClick(
+    event: MouseEvent<HTMLButtonElement>,
+    habit: ApiHabit,
+  ) {
+    event.stopPropagation();
+    onEditHabit?.(habit);
+  }
+
   return (
     <div className="habits-page">
       <header className="habits-header">
@@ -172,7 +184,12 @@ export default function HabitsPage({
             <p className="habits-eyebrow">ЩОДЕННИЙ ПРОГРЕС</p>
             <h1>Мої звички</h1>
           </div>
-          <button type="button" className="habits-back secondary" onClick={onBack}>Повернутися</button>
+          <div className="habits-heading-actions">
+            <button type="button" className="habit-add-button" onClick={onAddHabit}>
+              Нова звичка
+            </button>
+            <button type="button" className="habits-back secondary" onClick={onBack}>Повернутися</button>
+          </div>
         </div>
         {error && <div className="habits-error" role="alert"><span>{error}</span><button type="button" onClick={() => void loadHabits()}>Спробувати ще раз</button></div>}
         {loading ? (
@@ -182,7 +199,9 @@ export default function HabitsPage({
         ) : (
           <div className="habits-layout">
             <section className="habits-list-card">
-              <h2>Список звичок</h2>
+              <div className="habits-list-heading">
+                <h2>Список звичок</h2>
+              </div>
               <ul>
                 {habits.map((habit) => {
                   const done = todayCompletedIds.has(habit.id);
@@ -202,6 +221,14 @@ export default function HabitsPage({
                         onClick={() => void toggleToday(habit)}
                       >
                         {done ? '✓' : ''}
+                      </button>
+                      <button
+                        type="button"
+                        className="habit-menu-button"
+                        aria-label={`Редагувати звичку: ${habit.title}`}
+                        onClick={(event) => handleHabitMenuClick(event, habit)}
+                      >
+                        ⋮
                       </button>
                     </li>
                   );
