@@ -1,8 +1,19 @@
-import { useCallback, useEffect, useMemo, useState, type MouseEvent } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type FormEvent,
+  type MouseEvent,
+} from 'react';
 import logoIcon from '../assets/icons/logo.svg';
 import {
+  createHabit,
+  deleteHabit,
   loadHomeData,
+  updateHabit,
   type ApiHabit,
+  type CreateHabitDetails,
 } from '../services/homeService';
 import {
   getHabitHistory,
@@ -55,6 +66,149 @@ function formatFrequency(days: number[]): string {
   return 'За розкладом';
 }
 
+type HabitFrequency = 'daily' | 'selected-days' | 'interval';
+type HabitModalMode = 'create' | 'edit';
+
+const frequencyOptions: Array<{ value: HabitFrequency; label: string }> = [
+  { value: 'daily', label: 'Щодня' },
+  { value: 'selected-days', label: 'У певні дні' },
+  { value: 'interval', label: 'Кожні N днів' },
+];
+
+function frequencyFromDays(days: number[]): HabitFrequency {
+  if (days.length === 7) return 'daily';
+  if (days.length === 1) return 'interval';
+  return 'selected-days';
+}
+
+function daysForFrequency(frequency: HabitFrequency): number[] {
+  const currentDay = new Date().getDay() || 7;
+  if (frequency === 'daily') return [1, 2, 3, 4, 5, 6, 7];
+  if (frequency === 'selected-days') return [1, 3, 5];
+  return [currentDay];
+}
+
+function HabitModal({
+  mode,
+  habit,
+  busy,
+  onClose,
+  onSubmit,
+  onDelete,
+}: {
+  mode: HabitModalMode;
+  habit: ApiHabit | null;
+  busy: boolean;
+  onClose: () => void;
+  onSubmit: (details: CreateHabitDetails) => Promise<void>;
+  onDelete: () => Promise<void>;
+}) {
+  const [title, setTitle] = useState(habit?.title ?? '');
+  const [frequency, setFrequency] = useState<HabitFrequency>(
+    habit ? frequencyFromDays(habit.scheduledDays) : 'daily',
+  );
+  const [formError, setFormError] = useState('');
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) {
+      setFormError('Введіть назву звички.');
+      return;
+    }
+
+    setFormError('');
+    try {
+      await onSubmit({
+        title: trimmedTitle,
+        description: habit?.description ?? '',
+        scheduledDays: daysForFrequency(frequency),
+        ...(habit?.categoryId ? { categoryId: habit.categoryId } : {}),
+      });
+    } catch (requestError) {
+      setFormError(
+        requestError instanceof Error ? requestError.message : 'Не вдалося зберегти звичку.',
+      );
+    }
+  }
+
+  async function remove() {
+    setFormError('');
+    try {
+      await onDelete();
+    } catch (requestError) {
+      setFormError(
+        requestError instanceof Error ? requestError.message : 'Не вдалося видалити звичку.',
+      );
+    }
+  }
+
+  return (
+    <div className="habit-modal-backdrop" onMouseDown={onClose}>
+      <div
+        className="habit-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="habit-modal-title"
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        <div className="habit-modal-heading">
+          <h2 id="habit-modal-title">
+            {mode === 'create' ? 'Створити звичку' : 'Редагувати звичку'}
+          </h2>
+          <button type="button" className="habit-modal-close" onClick={onClose} aria-label="Закрити">
+            ×
+          </button>
+        </div>
+        <form className="habit-modal-form" onSubmit={(event) => void submit(event)}>
+          <label>
+            <span>Назва звички</span>
+            <input
+              autoFocus
+              value={title}
+              maxLength={60}
+              placeholder="Наприклад: Читати книгу"
+              onChange={(event) => {
+                setTitle(event.target.value);
+                setFormError('');
+              }}
+            />
+          </label>
+          <fieldset className="habit-frequency">
+            <legend>Регулярність</legend>
+            <div className="habit-frequency-options">
+              {frequencyOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  className={frequency === option.value ? 'is-selected' : ''}
+                  onClick={() => setFrequency(option.value)}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+          {formError && <p className="habit-modal-error" role="alert">{formError}</p>}
+          <div className={`habit-modal-actions${mode === 'edit' ? ' is-editing' : ''}`}>
+            {mode === 'edit' && (
+              <button type="button" className="habit-modal-delete" onClick={() => void remove()} disabled={busy}>
+                ▤ Видалити
+              </button>
+            )}
+            <button type="button" className="habit-modal-cancel" onClick={onClose} disabled={busy}>
+              Скасувати
+            </button>
+            <button type="submit" className="habit-modal-submit" disabled={busy}>
+              {busy ? 'Зберігаємо…' : mode === 'create' ? 'Створити звичку' : 'Зберегти зміни'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function HabitsPage({
   userName,
   onBack,
@@ -71,6 +225,10 @@ export default function HabitsPage({
   const [historyLoading, setHistoryLoading] = useState(false);
   const [busyId, setBusyId] = useState('');
   const [error, setError] = useState('');
+  const [modalMode, setModalMode] = useState<HabitModalMode | null>(null);
+  const [editingHabit, setEditingHabit] = useState<ApiHabit | null>(null);
+  const [modalBusy, setModalBusy] = useState(false);
+  const [defaultCategoryId, setDefaultCategoryId] = useState('');
 
   const loadHabits = useCallback(async () => {
     setLoading(true);
@@ -78,6 +236,7 @@ export default function HabitsPage({
     try {
       const data = await loadHomeData();
       setHabits(data.habits);
+      setDefaultCategoryId((current) => current || data.categories[0]?.id || '');
       setTodayCompletedIds(
         new Set(
           data.dashboard.habits.items
@@ -163,12 +322,67 @@ export default function HabitsPage({
     }
   }
 
+  function closeHabitModal() {
+    if (modalBusy) return;
+    setModalMode(null);
+    setEditingHabit(null);
+  }
+
+  function openCreateHabitModal() {
+    onAddHabit?.();
+    setEditingHabit(null);
+    setModalMode('create');
+  }
+
+  function openEditHabitModal(habit: ApiHabit) {
+    onEditHabit?.(habit);
+    setEditingHabit(habit);
+    setModalMode('edit');
+  }
+
+  async function saveHabit(details: CreateHabitDetails) {
+    if (modalBusy) return;
+    const categoryId = details.categoryId || defaultCategoryId;
+    if (!categoryId) {
+      throw new Error('Не вдалося визначити категорію для звички.');
+    }
+    setModalBusy(true);
+    try {
+      const payload = { ...details, categoryId };
+      const savedHabit = modalMode === 'edit' && editingHabit
+        ? await updateHabit(editingHabit.id, payload)
+        : await createHabit(payload);
+      await loadHabits();
+      setSelectedId(savedHabit.id);
+      setModalMode(null);
+      setEditingHabit(null);
+    } finally {
+      setModalBusy(false);
+    }
+  }
+
+  async function removeHabit() {
+    if (!editingHabit || modalBusy) return;
+    if (!window.confirm(`Видалити звичку «${editingHabit.title}»?`)) return;
+    setModalBusy(true);
+    try {
+      await deleteHabit(editingHabit.id);
+      setSelectedId('');
+      setHistory([]);
+      await loadHabits();
+      setModalMode(null);
+      setEditingHabit(null);
+    } finally {
+      setModalBusy(false);
+    }
+  }
+
   function handleHabitMenuClick(
     event: MouseEvent<HTMLButtonElement>,
     habit: ApiHabit,
   ) {
     event.stopPropagation();
-    onEditHabit?.(habit);
+    openEditHabitModal(habit);
   }
 
   return (
@@ -185,7 +399,7 @@ export default function HabitsPage({
             <h1>Мої звички</h1>
           </div>
           <div className="habits-heading-actions">
-            <button type="button" className="habit-add-button" onClick={onAddHabit}>
+            <button type="button" className="habit-add-button" onClick={openCreateHabitModal}>
               Нова звичка
             </button>
             <button type="button" className="habits-back secondary" onClick={onBack}>Повернутися</button>
@@ -262,6 +476,17 @@ export default function HabitsPage({
           </div>
         )}
       </main>
+      {modalMode && (
+        <HabitModal
+          key={`${modalMode}-${editingHabit?.id ?? 'new'}`}
+          mode={modalMode}
+          habit={editingHabit}
+          busy={modalBusy}
+          onClose={closeHabitModal}
+          onSubmit={saveHabit}
+          onDelete={removeHabit}
+        />
+      )}
       <nav className="habits-mobile-nav" aria-label="Навігація">
         <button type="button" onClick={onBack}>Головна</button>
         <button type="button" className="is-active">Звички</button>
