@@ -5,6 +5,12 @@ import {
   type FormEvent,
   type ReactNode,
 } from 'react';
+import {
+  loadCalendar,
+  setHabitCompletedToday,
+  type CalendarDay,
+  type CalendarHabit,
+} from '../services/homeService';
 import './PlannerPage.css';
 import logoIcon from '../assets/icons/logo.svg';
 import bannerImage from '../assets/images/planner-banner.png';
@@ -458,6 +464,10 @@ export default function Planner({ onNavigate, userId }: PlannerProps) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState('');
+  const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]);
+  const [calendarError, setCalendarError] = useState('');
+  const [calendarReload, setCalendarReload] = useState(0);
+  const [busyHabitId, setBusyHabitId] = useState('');
   const [view, setView] = useState(() => {
     const now = new Date();
     return { year: now.getFullYear(), month: now.getMonth() };
@@ -491,8 +501,40 @@ export default function Planner({ onNavigate, userId }: PlannerProps) {
     () => buildMonthGrid(view.year, view.month),
     [view.year, view.month],
   );
+  const calendarFrom = toISO(new Date(view.year, view.month, 1));
+  const calendarTo = toISO(new Date(view.year, view.month + 1, 0));
+
+  useEffect(() => {
+    let cancelled = false;
+
+    loadCalendar(calendarFrom, calendarTo)
+      .then((response) => {
+        if (cancelled) return;
+        setCalendarDays(response.days);
+        setCalendarError('');
+      })
+      .catch((cause: unknown) => {
+        if (cancelled) return;
+        setCalendarError(
+          cause instanceof Error
+            ? `Не вдалося завантажити календар звичок: ${cause.message}`
+            : 'Не вдалося завантажити календар звичок.',
+        );
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [calendarFrom, calendarTo, calendarReload]);
 
   const taskDays = useMemo(() => new Set(tasks.map((task) => task.date)), [tasks]);
+  const calendarDaysByDate = useMemo(
+    () => new Map(calendarDays.map((day) => [day.date, day])),
+    [calendarDays],
+  );
+  const selectedHabits = (calendarDaysByDate.get(selected)?.habits ?? []).filter(
+    (habit) => habit.isScheduled,
+  );
 
   const dayTasks = useMemo(
     () => tasks.filter((task) => task.date === selected).sort(byDateTime),
@@ -512,6 +554,20 @@ export default function Planner({ onNavigate, userId }: PlannerProps) {
         .sort(byDateTime)
         .slice(0, 2),
     [tasks, todayISO],
+  );
+  const upcomingHabits = useMemo(
+    () =>
+      calendarDays
+        .flatMap((day) =>
+          day.date >= todayISO
+            ? day.habits
+                .filter((habit) => habit.isScheduled)
+                .map((habit) => ({ date: day.date, habit }))
+            : [],
+        )
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .slice(0, 3),
+    [calendarDays, todayISO],
   );
 
   function shiftMonth(delta: number) {
@@ -544,6 +600,39 @@ export default function Planner({ onNavigate, userId }: PlannerProps) {
     } catch {
       setTasks((current) => current.map((item) => (item.id === task.id ? task : item)));
       setError(SAVE_ERROR);
+    }
+  }
+
+  async function handleToggleHabit(habit: CalendarHabit) {
+    if (busyHabitId || selected !== todayISO) return;
+
+    const date = selected;
+    setBusyHabitId(habit.id);
+    setCalendarError('');
+    try {
+      await setHabitCompletedToday(habit.id, !habit.isCompleted);
+      setCalendarDays((current) =>
+        current.map((day) =>
+          day.date === date
+            ? {
+                ...day,
+                habits: day.habits.map((item) =>
+                  item.id === habit.id
+                    ? { ...item, isCompleted: !habit.isCompleted }
+                    : item,
+                ),
+              }
+            : day,
+        ),
+      );
+    } catch (cause) {
+      setCalendarError(
+        cause instanceof Error
+          ? `Не вдалося оновити виконання звички: ${cause.message}`
+          : 'Не вдалося оновити виконання звички.',
+      );
+    } finally {
+      setBusyHabitId('');
     }
   }
 
@@ -636,6 +725,18 @@ export default function Planner({ onNavigate, userId }: PlannerProps) {
               {error}
             </p>
           )}
+          {calendarError && (
+            <p className="planner-error" role="alert">
+              {calendarError}{' '}
+              <button
+                type="button"
+                className="planner-error-retry"
+                onClick={() => setCalendarReload((current) => current + 1)}
+              >
+                Спробувати ще раз
+              </button>
+            </p>
+          )}
 
           <div className="planner-content">
             {}
@@ -682,6 +783,9 @@ export default function Planner({ onNavigate, userId }: PlannerProps) {
               <div className="planner-days">
                 {grid.map((day) => {
                   const iso = toISO(day);
+                  const scheduledHabits = (
+                    calendarDaysByDate.get(iso)?.habits ?? []
+                  ).filter((habit) => habit.isScheduled);
                   const className = [
                     'planner-day',
                     day.getMonth() !== view.month && 'is-outside',
@@ -697,11 +801,17 @@ export default function Planner({ onNavigate, userId }: PlannerProps) {
                       type="button"
                       className={className}
                       aria-pressed={iso === selected}
-                      aria-label={formatLongDate(day)}
+                      aria-label={`${formatLongDate(day)}${
+                        scheduledHabits.length
+                          ? `, звичок: ${scheduledHabits.length}`
+                          : ''
+                      }`}
                       onClick={() => handleSelectDay(day)}
                     >
                       <span>{day.getDate()}</span>
-                      {taskDays.has(iso) && <SparkIcon className="planner-day-spark" />}
+                      {(taskDays.has(iso) || scheduledHabits.length > 0) && (
+                        <SparkIcon className="planner-day-spark" />
+                      )}
                     </button>
                   );
                 })}
@@ -710,53 +820,74 @@ export default function Planner({ onNavigate, userId }: PlannerProps) {
 
             {}
             <div className="planner-side">
-              {ready && upcoming.length === 0 && (
+              {ready && upcoming.length === 0 && upcomingHabits.length === 0 && (
                 <section className="planner-card planner-upcoming is-empty">
                   <Icon name="calendar" className="planner-empty-calendar" />
                   <p>Найближчих справ немає. Час відпочити! 🌙</p>
                 </section>
               )}
 
-              {ready && upcoming.length > 0 && (
+              {ready && (upcoming.length > 0 || upcomingHabits.length > 0) && (
                 <section className="planner-card planner-upcoming">
                   <div className="planner-card-head">
                     <span className="planner-card-icon">
                       <Icon name="clock" />
                     </span>
                     <div>
-                      <h2>Найближчі справи</h2>
+                      <h2>Найближчі справи та звички</h2>
                       <p>
-                        {upcoming.length === 1
-                          ? '1 найближче завдання'
-                          : `${upcoming.length} найближчі завдання`}
+                        {upcoming.length > 0
+                          ? `${upcoming.length} завдань`
+                          : 'Заплановані звички'}
                       </p>
                     </div>
                   </div>
 
-                  <ul className="planner-upcoming-list">
-                    {upcoming.map((task) => (
-                      <li key={task.id} className="planner-upcoming-item">
-                        <span className="planner-task-bar" />
-                        <span className="planner-task-title">{task.title}</span>
-                        <span className="planner-task-category">{task.category}</span>
-                        <span className="planner-task-time">
-                          {formatWhen(task, todayISO)}
-                        </span>
-                        <button
-                          type="button"
-                          className="planner-task-menu"
-                          aria-label={`Редагувати справу «${task.title}»`}
-                          onClick={() => setEditor({ mode: 'edit', task })}
-                        >
-                          <Icon name="more" />
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
+                  {upcoming.length > 0 && (
+                    <ul className="planner-upcoming-list">
+                      {upcoming.map((task) => (
+                        <li key={task.id} className="planner-upcoming-item">
+                          <span className="planner-task-bar" />
+                          <span className="planner-task-title">{task.title}</span>
+                          <span className="planner-task-category">{task.category}</span>
+                          <span className="planner-task-time">
+                            {formatWhen(task, todayISO)}
+                          </span>
+                          <button
+                            type="button"
+                            className="planner-task-menu"
+                            aria-label={`Редагувати справу «${task.title}»`}
+                            onClick={() => setEditor({ mode: 'edit', task })}
+                          >
+                            <Icon name="more" />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {upcomingHabits.length > 0 && (
+                    <>
+                      <h3 className="planner-upcoming-subtitle">Звички за розкладом</h3>
+                      <ul className="planner-upcoming-list">
+                        {upcomingHabits.map(({ date, habit }) => (
+                          <li
+                            key={`${date}-${habit.id}`}
+                            className="planner-upcoming-item"
+                          >
+                            <span className="planner-task-bar" />
+                            <span className="planner-task-title">{habit.title}</span>
+                            <span className="planner-task-time">
+                              {formatLongDate(fromISO(date))}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
                 </section>
               )}
 
-              {ready && dayTasks.length === 0 && (
+              {ready && dayTasks.length === 0 && selectedHabits.length === 0 && (
                 <section className="planner-card planner-day-card is-empty">
                   <img className="planner-empty-image" src={emptyImage} alt="" />
                   <h2>На цей день немає справ ✨</h2>
@@ -771,14 +902,14 @@ export default function Planner({ onNavigate, userId }: PlannerProps) {
                 </section>
               )}
 
-              {ready && dayTasks.length > 0 && (
+              {ready && (dayTasks.length > 0 || selectedHabits.length > 0) && (
                 <section className="planner-card planner-day-card">
                   <div className="planner-card-head">
                     <span className="planner-card-icon planner-card-icon--filled">
                       <Icon name="checkSquare" />
                     </span>
                     <div>
-                      <h2>Справи на вибрану дату</h2>
+                      <h2>Справи та звички на вибрану дату</h2>
                       <p>{formatLongDate(selectedDate)}</p>
                     </div>
                   </div>
@@ -837,6 +968,46 @@ export default function Planner({ onNavigate, userId }: PlannerProps) {
                       </li>
                     ))}
                   </ul>
+
+                  {selectedHabits.length > 0 && (
+                    <section className="planner-habits" aria-label="Звички на вибрану дату">
+                      <h3>Заплановані звички</h3>
+                      <ul>
+                        {selectedHabits.map((habit) => (
+                          <li
+                            key={habit.id}
+                            className={`planner-habit${habit.isCompleted ? ' is-done' : ''}`}
+                          >
+                            {selected === todayISO ? (
+                              <button
+                                type="button"
+                                role="checkbox"
+                                aria-checked={habit.isCompleted}
+                                aria-label={`Позначити звичку «${habit.title}» ${
+                                  habit.isCompleted ? 'невиконаною' : 'виконаною'
+                                }`}
+                                className="planner-check"
+                                disabled={Boolean(busyHabitId)}
+                                onClick={() => void handleToggleHabit(habit)}
+                              >
+                                {habit.isCompleted && <Icon name="check" />}
+                              </button>
+                            ) : (
+                              <span
+                                className={`planner-check${habit.isCompleted ? ' is-checked' : ''}`}
+                                role="img"
+                                aria-label={habit.isCompleted ? 'Виконано' : 'Не виконано'}
+                              >
+                                {habit.isCompleted && <Icon name="check" />}
+                              </span>
+                            )}
+                            <span>{habit.title}</span>
+                            {habit.isCompleted && <strong>Виконано</strong>}
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
+                  )}
 
                   <button
                     type="button"

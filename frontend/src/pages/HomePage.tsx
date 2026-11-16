@@ -6,6 +6,7 @@ import {
   createHabit as createApiHabit,
   deleteHabit as deleteApiHabit,
   loadHomeData,
+  saveTodayMood,
   setHabitCompletedToday,
   type ApiCategory,
   type CreateHabitDetails,
@@ -266,6 +267,22 @@ const MOODS: { key: MoodKey; label: string; color: string; mouth: ReactNode }[] 
     mouth: <path d="M11.5 26q6.5-6 13 0" fill="none" stroke="#241735" strokeWidth="2.4" strokeLinecap="round" />,
   },
 ];
+
+const MOOD_SCORE_KEYS: Record<number, MoodKey> = {
+  1: 'sad',
+  2: 'tired',
+  3: 'neutral',
+  4: 'good',
+  5: 'great',
+};
+
+const MOOD_KEY_SCORES: Record<MoodKey, number> = {
+  great: 5,
+  good: 4,
+  neutral: 3,
+  tired: 2,
+  sad: 1,
+};
 
 function MoodFace({ color, mouth }: { color: string; mouth: ReactNode }) {
   return (
@@ -691,10 +708,12 @@ export default function HomePage({
   const [homeLoading, setHomeLoading] = useState(true);
   const [homeError, setHomeError] = useState('');
   const [habitActionId, setHabitActionId] = useState('');
+  const [moodSaving, setMoodSaving] = useState(false);
   const [moods, setMoods] = useStoredState<Record<string, MoodKey>>(
     `stellora:${scope}:moods`,
     {},
   );
+  const [selectedMood, setSelectedMood] = useState<MoodKey | null>(moods[today] ?? null);
 
   const refreshHomeData = useCallback(async () => {
     setHomeLoading(true);
@@ -717,6 +736,19 @@ export default function HomePage({
       );
       setCategories(data.categories);
       setServerName(data.dashboard.displayName);
+      setMoods((current) => {
+        const next = { ...current };
+        const moodKey = data.moodScore === null ? undefined : MOOD_SCORE_KEYS[data.moodScore];
+        if (moodKey) {
+          next[data.dashboard.today] = moodKey;
+        } else {
+          delete next[data.dashboard.today];
+        }
+        return next;
+      });
+      setSelectedMood(
+        data.moodScore === null ? null : MOOD_SCORE_KEYS[data.moodScore] ?? null,
+      );
     } catch (error) {
       setHomeError(
         error instanceof Error
@@ -726,7 +758,7 @@ export default function HomePage({
     } finally {
       setHomeLoading(false);
     }
-  }, []);
+  }, [setMoods]);
 
   useEffect(() => {
     void Promise.resolve().then(refreshHomeData);
@@ -907,13 +939,22 @@ const [focusTaskId, setFocusTaskId] = useStoredState(`stellora:${scope}:focusTas
   const timerTouched = remaining !== duration || finished;
 
   const savedMood = moods[today];
-  const [selectedMood, setSelectedMood] = useState<MoodKey | null>(savedMood ?? null);
 
-  function saveMood() {
-    if (!selectedMood) return;
-    setMoods((prev) => ({ ...prev, [today]: selectedMood }));
+  async function saveMood() {
+    if (!selectedMood || moodSaving) return;
+    setMoodSaving(true);
+    setHomeError('');
+    try {
+      await saveTodayMood(MOOD_KEY_SCORES[selectedMood]);
+      setMoods((prev) => ({ ...prev, [today]: selectedMood }));
+    } catch (error) {
+      setHomeError(
+        error instanceof Error ? error.message : 'Не вдалося зберегти настрій.',
+      );
+    } finally {
+      setMoodSaving(false);
+    }
   }
-
 
   return (
     <div className="home-page">
@@ -1294,10 +1335,14 @@ const [focusTaskId, setFocusTaskId] = useStoredState(`stellora:${scope}:focusTas
               <button
                 type="button"
                 className="home-btn home-btn-outline home-mood-save"
-                disabled={!selectedMood}
-                onClick={saveMood}
+                disabled={!selectedMood || moodSaving}
+                onClick={() => void saveMood()}
               >
-                {savedMood && savedMood === selectedMood ? 'Збережено ✓' : 'Зберегти'}
+                {moodSaving
+                  ? 'Зберігаємо…'
+                  : savedMood && savedMood === selectedMood
+                    ? 'Збережено ✓'
+                    : 'Зберегти'}
               </button>
             </section>
           </div>

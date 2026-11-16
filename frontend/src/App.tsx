@@ -5,12 +5,13 @@ import RegisterCard from './components/RegisterCard';
 import HomePage from './pages/HomePage';
 import PlannerPage from './pages/PlannerPage';
 import ProfilePage from './pages/ProfilePage';
+import DiaryPage from './pages/DiaryPage';
 import { getCurrentUser, logoutUser, type UserProfile } from './services/authService';
 import logoIcon from './assets/icons/logo.svg';
 import './App.css';
 
 
-type AuthPage = 'login' | 'register' | 'home' | 'planner' | 'profile';
+type AuthPage = 'login' | 'register' | 'home' | 'planner' | 'profile' | 'diary';
 
 function App() {
   const [page, setPage] = useState<AuthPage>('register');
@@ -82,6 +83,8 @@ function App() {
             setPage('profile');
           } else if (destination === 'planner') {
             setPage('planner');
+          } else if (destination === 'diary') {
+            setPage('diary');
           }
         }}
       />
@@ -97,6 +100,8 @@ function App() {
             setPage('profile');
           } else if (destination === 'home') {
             setPage('home');
+          } else if (destination === 'daily') {
+            setPage('diary');
           }
         }}
       />
@@ -111,6 +116,25 @@ function App() {
         onNavigate={(destination) => {
           if (destination === 'planner') {
             setPage('planner');
+          } else if (destination === 'diary') {
+            setPage('diary');
+          }
+        }}
+      />
+    );
+  }
+
+  if (page === 'diary' && user) {
+    return (
+      <DiaryPage
+        onUnauthorized={() => void handleLogout()}
+        onNavigate={(destination) => {
+          if (destination === 'home') {
+            setPage('home');
+          } else if (destination === 'planner') {
+            setPage('planner');
+          } else if (destination === 'profile') {
+            setPage('profile');
           }
         }}
       />

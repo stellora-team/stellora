@@ -56,20 +56,32 @@ export interface HomeData {
   dashboard: DashboardResponse;
   habits: ApiHabit[];
   categories: ApiCategory[];
+  moodScore: number | null;
 }
 
 export async function loadHomeData(): Promise<HomeData> {
-  const [dashboard, habitPage, categories] = await Promise.all([
+  const [dashboard, habitPage, categories, moods] = await Promise.all([
     authenticatedRequest<DashboardResponse>('/api/dashboard'),
     authenticatedRequest<HabitPageResponse>('/api/habits?page=1&pageSize=100'),
     authenticatedRequest<ApiCategory[]>('/api/categories'),
+    authenticatedRequest<{ recordedOn: string; score: number }[]>(
+      '/api/moods?page=1&pageSize=14',
+    ),
   ]);
 
   return {
     dashboard,
     habits: habitPage.items,
     categories,
+    moodScore: moods.find((mood) => mood.recordedOn === dashboard.today)?.score ?? null,
   };
+}
+
+export async function saveTodayMood(score: number): Promise<void> {
+  await authenticatedRequest<void>('/api/moods/today', {
+    method: 'PUT',
+    body: JSON.stringify({ score }),
+  });
 }
 
 export async function createHabit(details: CreateHabitDetails): Promise<ApiHabit> {
@@ -95,21 +107,27 @@ export async function setHabitCompletedToday(
   );
 }
 
-export interface CalendarActivity {
+export interface CalendarHabit {
   id: string;
-  type: 'Task' | 'Goal' | 'HabitCompletion' | 'FocusSession' | 'MoodEntry' | 'MemoryEntry' | 'Reminder';
   title: string;
-  timestamp: string;
-  status?: string;
-  categoryId?: string;
-  relatedId?: string;
+  categoryId: number | null;
+  isScheduled: boolean;
+  isCompleted: boolean;
+}
+
+export interface CalendarDay {
+  date: string;
+  habits: CalendarHabit[];
 }
 
 export interface CalendarResponse {
-  userId: string;
-  selectedPeriod: {
-    startDate: string;
-    endDate: string;
-  };
-  datedActivities: Record<string, CalendarActivity[]>;
+  from: string;
+  to: string;
+  timeZone: string;
+  days: CalendarDay[];
+}
+
+export function loadCalendar(from: string, to: string): Promise<CalendarResponse> {
+  const params = new URLSearchParams({ from, to });
+  return authenticatedRequest<CalendarResponse>(`/api/calendar?${params}`);
 }
