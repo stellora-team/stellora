@@ -79,18 +79,18 @@ export async function createHabit(details: CreateHabitDetails): Promise<ApiHabit
   });
 }
 
+export async function updateHabit(
+  id: string,
+  details: CreateHabitDetails,
+): Promise<ApiHabit> {
+  return authenticatedRequest<ApiHabit>(`/api/habits/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    body: JSON.stringify(details),
+  });
+}
+
 export async function deleteHabit(id: string): Promise<void> {
   await authenticatedRequest<void>(`/api/habits/${encodeURIComponent(id)}`, {
     method: 'DELETE',
   });
-}
-
-export async function setHabitCompletedToday(
-  id: string,
-  completed: boolean,
-): Promise<void> {
-  await authenticatedRequest<void>(
-    `/api/habits/${encodeURIComponent(id)}/completions/today`,
-    { method: completed ? 'PUT' : 'DELETE' },
-  );
 }

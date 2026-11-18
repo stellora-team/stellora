@@ -5,10 +5,14 @@ import {
   createHabit as createApiHabit,
   deleteHabit as deleteApiHabit,
   loadHomeData,
-  setHabitCompletedToday,
   type ApiCategory,
   type CreateHabitDetails,
 } from '../services/homeService';
+import {
+  getHabitHistory,
+  setHabitCompletedToday,
+  type HabitCompletion,
+} from '../services/habitsService';
 import './HomePage.css';
 
 type NavKey =
@@ -367,7 +371,13 @@ function useStoredState<T>(key: string, initial: T) {
   return [value, setValue] as const;
 }
 
-function RowMenu({ onDelete }: { onDelete: () => void }) {
+function RowMenu({
+  onDelete,
+  onHistory,
+}: {
+  onDelete: () => void;
+  onHistory?: () => void;
+}) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -393,6 +403,17 @@ function RowMenu({ onDelete }: { onDelete: () => void }) {
       </button>
       {open && (
         <div className="home-menu-pop">
+          {onHistory && (
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                onHistory();
+              }}
+            >
+              Історія
+            </button>
+          )}
           <button
             type="button"
             onClick={() => {
@@ -734,8 +755,28 @@ export default function HomePage({
   }
 
   const [showAllHabits, setShowAllHabits] = useState(false);
+  const [historyHabit, setHistoryHabit] = useState<Habit | null>(null);
+  const [history, setHistory] = useState<HabitCompletion[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState('');
   const habitsDone = habits.filter((habit) => habit.doneToday).length;
   const visibleHabits = showAllHabits ? habits : habits.slice(0, 3);
+
+  async function openHabitHistory(habit: Habit) {
+    setHistoryHabit(habit);
+    setHistory([]);
+    setHistoryError('');
+    setHistoryLoading(true);
+    try {
+      setHistory(await getHabitHistory(habit.id));
+    } catch (error) {
+      setHistoryError(
+        error instanceof Error ? error.message : 'Не вдалося завантажити історію звички.',
+      );
+    } finally {
+      setHistoryLoading(false);
+    }
+  }
 
   async function addHabit(data: CreateHabitDetails) {
     if (habitActionId) return;
@@ -1054,9 +1095,18 @@ const [focusTaskId, setFocusTaskId] = useStoredState(`stellora:${scope}:focusTas
                           {done ? '✓' : ''}
                         </button>
                         <Icon name={HABIT_ICON_NAME[h.icon]} size={15} className="home-habit-icon" />
-                        <span className="home-item-title">{h.title}</span>
+                        <button
+                          type="button"
+                          className="home-item-title home-item-title-button"
+                          onClick={() => void openHabitHistory(h)}
+                        >
+                          {h.title}
+                        </button>
                         <span className="home-item-meta home-item-meta-right">{h.frequency}</span>
-                        <RowMenu onDelete={() => deleteHabit(h.id)} />
+                        <RowMenu
+                          onDelete={() => deleteHabit(h.id)}
+                          onHistory={() => void openHabitHistory(h)}
+                        />
                       </li>
                     );
                   })}
@@ -1295,6 +1345,34 @@ const [focusTaskId, setFocusTaskId] = useStoredState(`stellora:${scope}:focusTas
             onSubmit={addHabit}
             onCancel={() => setModal(null)}
           />
+        </Modal>
+      )}
+      {historyHabit && (
+        <Modal
+          title={`Історія: ${historyHabit.title}`}
+          onClose={() => setHistoryHabit(null)}
+        >
+          <div className="home-history">
+            {historyLoading ? (
+              <p className="home-empty" role="status">Завантажуємо історію…</p>
+            ) : historyError ? (
+              <p className="home-form-error" role="alert">{historyError}</p>
+            ) : history.length === 0 ? (
+              <p className="home-empty">Цю звичку ще не виконували.</p>
+            ) : (
+              <ul className="home-history-list">
+                {history.map((item) => (
+                  <li key={item.id}>
+                    {new Date(`${item.completedOn}T00:00:00`).toLocaleDateString('uk-UA', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                    })}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </Modal>
       )}
     </div>

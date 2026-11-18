@@ -3,17 +3,14 @@ import LoginCard from './components/LoginCard';
 import RegisterCard from './components/RegisterCard';
 import HomePage from './pages/HomePage';
 import ProfilePage from './pages/ProfilePage';
-import {
-  getCurrentUser,
-  logoutUser,
-  type UserProfile,
-} from './services/authService';
+import HabitsPage from './pages/HabitsPage';
+import { getCurrentUser, logoutUser, type UserProfile } from './services/authService';
 import logoIcon from './assets/icons/logo.svg';
 import './App.css';
 import StatisticsPage from './pages/StatisticsPage';
 
-type AuthPage = 'login' | 'register' | 'home' | 'profile' | 'statistics';
-type AppNavigationDestination = 'home' | 'profile' | 'statistics';
+type AuthPage = 'login' | 'register' | 'home' | 'profile' | 'habits' | 'statistics';
+type AppNavigationDestination = 'home' | 'profile' | 'habits' | 'statistics';
 
 function App() {
   const [page, setPage] = useState<AuthPage>('register');
@@ -87,6 +84,8 @@ function App() {
         onNavigate={(destination) => {
           if (destination === 'profile') {
             setPage('profile');
+          } else if (destination === 'habits') {
+            setPage('habits');
           }
           if (destination === 'statistics') {
             setPage('statistics');
@@ -113,6 +112,20 @@ function App() {
         userId={user.id}
         onBack={() => setPage('home')}
         onNavigate={(destination) => setPage(destination)}
+      />
+    );
+  }
+
+  if (page === 'habits' && user) {
+    return (
+      <HabitsPage
+        userName={user.displayName}
+        userId={user.id}
+        onBack={() => setPage('home')}
+        onNavigate={(destination) => {
+          if (destination === 'profile') setPage('profile');
+          if (destination === 'main') setPage('home');
+        }}
       />
     );
   }
