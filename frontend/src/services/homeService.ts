@@ -113,3 +113,45 @@ export interface CalendarResponse {
   };
   datedActivities: Record<string, CalendarActivity[]>;
 }
+export interface ApiGoal {
+  id: string;
+  userId: string;
+  categoryId: string;
+  title: string;
+  description: string | null;
+  deadline: string;
+  status: string;
+  progress: number;
+}
+
+export interface CreateGoalDetails {
+  title: string;
+  description?: string;
+  categoryId: string;
+  deadline: string;
+}
+
+export interface Constellation {
+  id: string;
+  categoryId: string;
+  name: string;
+  starCount: number;
+  starCoordinates: string;
+}
+
+export interface CosmosConstellation {
+  id: string;
+  cosmosId: string;
+  constellationId: string;
+  progressValue: number;
+  visualState: string;
+  status: string;
+}
+
+export interface PersonalCosmos {
+  id: string;
+  userId: string;
+  constellations: CosmosConstellation[];
+  progressData: string;
+  updatedAt: string;
+}
